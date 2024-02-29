@@ -1,8 +1,7 @@
 import React from "react";
 import logo from "../assets/Sopra_Steria_logo.svg";
-import Login from "./login";
-import Register from "./register";
 import { Link } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
 
 import {
   Navbar,
@@ -11,18 +10,32 @@ import {
   Button,
   IconButton,
 } from "@material-tailwind/react";
+import useLogout from "../hooks/useLogout";
  
 export function NavbarDefault() {
   const [openNav, setOpenNav] = React.useState(false);
+  const { auth } = useAuth();
  
   React.useEffect(() => {
-    window.addEventListener(
+    /*window.addEventListener(
       "resize",
       () => window.innerWidth >= 960 && setOpenNav(false),
-    );
+    );*/
   }, []);
  
+ const {logout}= useLogout()
+
+  const handleClick=()=>{
+    logout()
+  }
+  
   const navList = (
+    <div>
+
+    </div>
+  )
+
+    {/*
     <ul className="mt-2 mb-4 flex flex-col gap-2 lg:mb-0 lg:mt-0 lg:flex-row lg:items-center lg:gap-6">
       <Typography
         as="li"
@@ -118,8 +131,8 @@ export function NavbarDefault() {
         </a>
       </Typography>
     </ul>
-  );
- 
+      */}
+
   return (
     <Navbar className="mx-auto max-w-screen-xl px-4 py-2 lg:px-8 lg:py-4">
       <div className="container mx-auto flex items-center justify-between text-blue-gray-900">
@@ -128,21 +141,40 @@ export function NavbarDefault() {
   href="#"
   className="mr-4 cursor-pointer py-1.5 font-medium"
 >
-  <img src={logo} alt="React" className="h-8 w-32" />
+     <Link to="/">
+<img src={logo} alt="logo" className="h-8 w-32" />
+  </Link>
+
 </Typography>
         <div className="hidden lg:block">{navList}</div>
-        <div className="flex items-center gap-x-1">
-        <Button variant="text" size="sm" className="hidden lg:inline-block">
-            <span>Log In</span>
-          </Button>
-          <Button
-            variant="gradient"
-            size="sm"
-            className="hidden lg:inline-block"
-          >
-            <span>Sign in</span>
-          </Button>
-        </div>
+        {auth.token ? (
+          <div className="flex items-center gap-x-1">
+            <Button
+              variant="gradient"
+              size="sm"
+              className="hidden lg:inline-block"
+              onClick={handleClick}
+            >
+              Logout
+            </Button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-x-1">
+            <Button variant="text" size="sm" className="hidden lg:inline-block">
+              <Link to="/login">Login</Link>
+            </Button>
+          </div>
+        )}
+        {auth.role === "admin" ? (
+          <div className="flex items-center gap-x-1">
+            <Button variant="gradient" size="sm" className="hidden lg:inline-block">
+              <Link to="/admin">Admin</Link>
+            </Button>
+          </div>
+        ) : null}
+        
+        
+
         <IconButton
           variant="text"
           className="ml-auto h-6 w-6 text-inherit hover:bg-transparent focus:bg-transparent active:bg-transparent lg:hidden"
@@ -184,18 +216,27 @@ export function NavbarDefault() {
       <MobileNav open={openNav}>
         <div className="container mx-auto">
           {navList}
+          {auth.token ? (
           <div className="flex items-center gap-x-1">
-            <Button fullWidth variant="text" size="sm" className="">
-              <span>Log In</span>
-            </Button>
-            <Button fullWidth variant="gradient" size="sm" className="">
-              <span>Sign in</span>
+            <Button
+              variant="gradient"
+              size="sm"
+              className="hidden lg:inline-block"
+              onClick={handleClick}
+            >
+              Logout
             </Button>
           </div>
+        ) : (
+          <div className="flex items-center gap-x-1">
+            <Button variant="text" size="sm" className="hidden lg:inline-block">
+              <Link to="/login">Login</Link>
+            </Button>
+          </div>
+        )}
         </div>
       </MobileNav>
     </Navbar>
   );
 }
-
 export default NavbarDefault;
