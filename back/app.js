@@ -1,36 +1,46 @@
 require('dotenv').config();
-
 const express = require('express');
-const mongoose = require('mongoose');
-const userRoutes = require('./routes/userRoute');
-const cors = require('cors');
-
 const app = express();
+const path = require('path');
+const cors = require('cors');
+const corsOptions = require('./config/corsOptions');
+const verifyJWT = require('./middleware/verifyJWT');
+const cookieParser = require('cookie-parser');
+const credentials = require('./middleware/credentials');
+const mongoose = require('mongoose');
+const connectDB = require('./config/db');
+const PORT = process.env.PORT || 3500;
+
+// Connect to MongoDB
+connectDB();
+
+
+// Handle options credentials check - before CORS!
+// and fetch cookies credentials requirement
+app.use(credentials);
+
+// Cross Origin Resource Sharing
+app.use(cors(corsOptions));
+
+// built-in middleware to handle urlencoded form data
+app.use(express.urlencoded({ extended: false }));
+
+// built-in middleware for json 
 app.use(express.json());
 
-//CORS
-app.use(cors({
-    credentials: true,
-    origin: 'http://localhost:5173',
-  }));
-  
-  const port=process.env.PORT || 3000;
+//middleware for cookies
+app.use(cookieParser());
 
-//connect with DB
-const connectWithDB = require('./config/db');
-connectWithDB();
+// routes
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/refresh', require('./routes/refresh'))
+app.use('/api/logout', require('./routes/logout'));
 
+app.use(verifyJWT);
+app.use('/api/register', require('./routes/register'));
+app.use('/api/users', require('./routes/api/users'));
 
-app.get('/', (req, res) => {
-    res.send('Hello World!');
-    });
-
-
-
-app.listen(port, () => {
-    console.log(`app listening at http://localhost:${port}`);
-    }
-);
-
-app.use('/api/users', userRoutes);
-
+mongoose.connection.once('open', () => {
+    console.log('Connected to MongoDB');
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+});

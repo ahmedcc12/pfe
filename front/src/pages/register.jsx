@@ -29,8 +29,9 @@ export default function RegisterPage() {
 
   async function registerUser(ev) {
     ev.preventDefault();
-    await handleSignup(email, name, password, role);
-    navigate("/admin");
+    const {error} = await handleSignup(email, name, password, role);
+    console.log('error', error);
+    if (!error) navigate("/admin");
   }
 
   return (

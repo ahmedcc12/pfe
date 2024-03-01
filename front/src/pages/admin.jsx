@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import Users from '../components/Users.jsx';
 
+
 const Homepage = () => {
     return (
         <div className="container mx-auto mt-8">
@@ -9,7 +10,7 @@ const Homepage = () => {
         <p>Welcome to the Admin homepage</p>
 
         <br />
-            <Users />
+            <Users />   
             <br />
 
         <p>register a user : </p>

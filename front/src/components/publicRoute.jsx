@@ -6,7 +6,8 @@ import useAuth from '../hooks/useAuth';
 const PublicRoute = ({ children }) => {
   const { auth } = useAuth();
 
-  return !auth.token ? children : <Navigate to="/" replace />;
+  return !auth.accessToken
+   ? children : <Navigate to="/" replace />;
 };
 
 export default PublicRoute;

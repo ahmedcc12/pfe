@@ -9,7 +9,7 @@ export default function useLogout() {
         // Clear authentication state
         setAuth({});
         //clear local storage
-        localStorage.removeItem('token');
+        localStorage.removeItem('accessToken');
 
     };
 

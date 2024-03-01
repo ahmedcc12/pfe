@@ -7,7 +7,7 @@ const PersistLogin = () => {
     const { auth } = useAuth();
 
     useEffect(() => {
-        if (auth.token) {
+        if (auth.accessToken) {
             setLoading(false);
         }
     }, [auth]);

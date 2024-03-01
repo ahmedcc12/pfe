@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
+import { useLocation } from 'react-router-dom'
 import './App.css'
 import Navbar, { NavbarDefault } from './components/navbar'
 import Login from './pages/login'
@@ -19,11 +20,13 @@ import PublicRoute from './components/publicRoute'
 
 function App() {
   const [count, setCount] = useState(0)
+  const location = useLocation(); // Get current location
+  const renderNavbarDefault = location.pathname !== '/login';
 
   return (
     <div>
       
-        <NavbarDefault />
+      {renderNavbarDefault && <NavbarDefault />}
         <Routes>
           
         <Route 
@@ -40,7 +43,7 @@ function App() {
         <Route element={<RequireAuth allowedRoles={["admin"]}/>} >
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin/register" element={<Register />} />
-        </Route>
+       </Route>
 
         <Route path="*" element={<Missing/>}/>
         </Routes>

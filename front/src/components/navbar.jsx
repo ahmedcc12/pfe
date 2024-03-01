@@ -147,7 +147,7 @@ export function NavbarDefault() {
 
 </Typography>
         <div className="hidden lg:block">{navList}</div>
-        {auth.token ? (
+        {auth.accessToken ? (
           <div className="flex items-center gap-x-1">
             <Button
               variant="gradient"
@@ -216,7 +216,7 @@ export function NavbarDefault() {
       <MobileNav open={openNav}>
         <div className="container mx-auto">
           {navList}
-          {auth.token ? (
+          {auth.accessToken ? (
           <div className="flex items-center gap-x-1">
             <Button
               variant="gradient"
@@ -229,7 +229,7 @@ export function NavbarDefault() {
           </div>
         ) : (
           <div className="flex items-center gap-x-1">
-            <Button variant="text" size="sm" className="hidden lg:inline-block">
+            <Button variant="text" size="sm" className="lg:inline-block">
               <Link to="/login">Login</Link>
             </Button>
           </div>

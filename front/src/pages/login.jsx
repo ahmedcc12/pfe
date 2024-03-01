@@ -27,7 +27,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     // If user is logged in, redirect to homepage
-    if (auth.token) {
+    if (auth.accessToken) {
       navigate("/");
     }
   }, [auth, navigate]);
@@ -35,12 +35,12 @@ export default function LoginPage() {
   async function handleLoginSubmit(ev) {
     ev.preventDefault();
 
-    if (useAuth.token) {
-      console.log('token',useAuth.token)
+    if (useAuth.accessToken) {
+      console.log('accessToken',useAuth.accessToken)
       console.log('auth',useAuth)
     }
-    await handleLogin(email, password);
-
+    const {error}=await handleLogin(email, password);
+    if(!error)
     navigate("/");
   }
 
@@ -49,7 +49,7 @@ export default function LoginPage() {
       {redirect ? (
         <Navigate to={"/"} />
       ) : (
-        <div className="mt-4 grow flex items-center justify-around">
+        <div className="flex items-center justify-center h-screen">
           <div className="mb-64">
             <h1 className="text-4xl text-center mb-4">Login</h1>
             <form className="max-w-md mx-auto" onSubmit={handleLoginSubmit}>
