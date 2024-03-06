@@ -4,8 +4,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 
 export default function RegisterPage() {
-  const {id} = useParams();
-  const [matricule, setMatricule] = useState('');
+  const {matricule} = useParams();
+  const [newMatricule, setNewMatricule] = useState('');
   const [firstname, setFirstname] = useState('');
   const [lastname, setLastname] = useState('');
   const [department, setDepartment] = useState('');
@@ -21,16 +21,17 @@ export default function RegisterPage() {
   const Navigate = useNavigate();
 
   useEffect (() => {
-    if (!id) 
+    if (!matricule) 
       return;
 
     const fetchUser = async () => {
       try {
-        const { data } = await axiosPrivate.get(`/users/${id}`);
+        console.log("fetching user with id ", matricule)
+        const { data } = await axiosPrivate.get(`/users/${matricule}`);
         setFirstname(data.firstname);
         setLastname(data.lastname);
         setDepartment(data.department);
-        setMatricule(data.matricule);
+        setNewMatricule(data.matricule);
         setEmail(data.email);
         setRole(data.role);
       } catch (error) {
@@ -40,7 +41,7 @@ export default function RegisterPage() {
       }
     }
     fetchUser();
-  }, [id]);
+  }, [matricule]);
 
   useEffect(() => {
     setErrMsg('');
@@ -61,10 +62,9 @@ export default function RegisterPage() {
         return;
       }
 
-      if (id) {
-        console.log("Updating user" , id , matricule, email, firstname, lastname, department, role, access, userrole);
-        await axiosPrivate.put(`/users/${id}`, {
-          matricule,
+      if (matricule) {
+        await axiosPrivate.put(`/users/${matricule}`, {
+          newMatricule,
           email,
           firstname,
           lastname,
@@ -75,7 +75,7 @@ export default function RegisterPage() {
         });
       } else {
         await axiosPrivate.post("/register", {
-          matricule,
+          newMatricule,
           email,
           firstname,
           lastname,
@@ -102,14 +102,14 @@ export default function RegisterPage() {
       ) : (
         <div className="mt-4 grow flex items-center justify-around">
           <div className="mb-64">
-            <h1 className="text-4xl text-center mb-4">Register</h1>
+            <h1 className="text-4xl text-center mb-4">{matricule ?  <p>Edit</p> : <p>Register</p> }</h1>
             <form className="max-w-md mx-auto" onSubmit={registerUser}>
             <input
                 required
                 type="text"
                 placeholder="matricule"
-                value={matricule}
-                onChange={(ev) => setMatricule(ev.target.value)}
+                value={newMatricule}
+                onChange={(ev) => setNewMatricule(ev.target.value)}
               />
               <input
                 required
@@ -146,7 +146,7 @@ export default function RegisterPage() {
                 <option value="user">User</option>
                 <option value="admin">Admin</option>
               </select>
-              {id ? (
+              {matricule ? (
                 <button disabled={loading} className="primary">Update User</button>
               ) : (
                 <button disabled={loading} className="primary">Sign Up</button>

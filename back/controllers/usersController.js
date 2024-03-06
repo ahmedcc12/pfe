@@ -36,21 +36,22 @@ const getAllUsers = async (req, res) => {
 
 
 const deleteUser = async (req, res) => {
-    if (!req?.params?._id) return res.status(400).json({ "message": 'User ID required' });
-    const user = await User.findOne({ _id: req.params._id }).exec();
+    if (!req?.params?.matricule) return res.status(400).json({ "message": 'User ID required' });
+    const user = await User.findOne({ matricule: req.params.matricule }).exec();
     if (!user) {
-        return res.status(204).json({ 'message': `User ID ${req.params._id} not found` });
+        return res.status(204).json({ 'message': `User ID ${req.params.matricule} not found` });
     }
-    const result = await user.deleteOne({ _id: req.params._id });
+    const result = await user.deleteOne({ matricule: req.params.matricule });
     res.json(result);
 }
 
 const getUser = async (req, res) => {
-    if (!req?.params?._id) return res.status(400).json({ "message": 'User ID required' });
+    if (!req?.params?.matricule) return res.status(400).json({ "message": 'User ID required' });
   
     try {
-      const user = await User.findById(req.params._id);
-      if (!user) {
+        const user = await User.findOne({ matricule: req.params.matricule }).exec();
+        if (!user) {
+        console.log('User not founddd');
         return res.status(404).json({ error: 'User not found' });
       }
       res.json(user);
@@ -63,11 +64,11 @@ const getUser = async (req, res) => {
 
 
 const updateUser = async (req, res) => {
-    if (!req.params?._id) return res.status(400).json({ "message": 'User ID required' });
+    if (!req.params?.matricule) return res.status(400).json({ "message": 'User ID required' });
 
-    const { matricule, email, firstname, lastname, department, role, access } = req.body;
+    const { newMatricule, email, firstname, lastname, department, role, access } = req.body;
 
-    if (!matricule || !email || !firstname || !lastname || !department || !role) {
+    if (!newMatricule || !email || !firstname || !lastname || !department || !role) {
         return res.status(400).json({ 'message': 'Missing required fields.' });
     }
 
@@ -76,15 +77,15 @@ const updateUser = async (req, res) => {
     }
 
     try {
-        const userId = req.params._id;
-        const existingUser = await User.findById(userId);
+
+        const existingUser = await User.findOne({ matricule: req.params.matricule }).exec();
 
         if (!existingUser) {
-            return res.status(404).json({ 'message': `User with ID ${userId} not found` });
+            return res.status(404).json({ 'message': `User with ID ${matricule} not found` });
         }
 
         const emailChanged = existingUser.email !== email;
-        const matriculeChanged = existingUser.matricule !== matricule;
+        const matriculeChanged = existingUser.matricule !== newMatricule;
 
         if (emailChanged) {
             const duplicateEmail = await User.findOne({ email });
@@ -94,13 +95,13 @@ const updateUser = async (req, res) => {
         }
 
         if (matriculeChanged) {
-            const duplicateMatricule = await User.findOne({ matricule });
+            const duplicateMatricule = await User.findOne({ matricule: newMatricule});
             if (duplicateMatricule) {
                 return res.status(409).json({ 'message': 'Matricule already in use' });
             }
         }
 
-        existingUser.matricule = matricule;
+        existingUser.matricule = newMatricule;
         existingUser.email = email;
         existingUser.firstname = firstname;
         existingUser.lastname = lastname;
@@ -109,7 +110,7 @@ const updateUser = async (req, res) => {
         existingUser.access = access;
 
         const updatedUser = await existingUser.save();
-        res.status(200).json({ 'success': `User ${updatedUser.username} was updated!` });
+        res.status(200).json({ 'success': `User ${updatedUser.matricule} was updated!` });
     } catch (err) {
         res.status(500).json({ 'message': err.message });
     }

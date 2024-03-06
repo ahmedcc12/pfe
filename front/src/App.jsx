@@ -16,7 +16,6 @@ import RequireAuth from './components/RequireAuth'
 import PublicRoute from './components/publicRoute'
 import PersistLogin from './components/PersistLogin'
 import Unauthorized from './components/Unauthorized'
-import Profile from './pages/profile'
 import ForgotPassword from './components/ForgotPassword'
 import ResetPassword from './components/ResetPassword'
 
@@ -29,6 +28,8 @@ function App() {
       <NavbarDefault />
         <Routes>
           
+        <Route element={<PersistLogin/>} >
+
         <Route 
         path="/login" 
         element={
@@ -48,23 +49,20 @@ function App() {
                     <Route 
         path="/resetpassword/:token" 
         element={
-          <PublicRoute>
             <ResetPassword />
-          </PublicRoute>
         } 
       />
 
-        <Route element={<PersistLogin/>} >
         <Route element={<RequireAuth allowedRoles={["user","admin"]}/>} >
           <Route path="/" element={<Homepage />} />
-          <Route path="/Profile" element={<Profile />} />
+          {/* <Route path="/Profile" element={<Profile />} /> */}
           <Route path="/unauthorized" element={<Unauthorized />} />
           <Route path="/missing" element={<Missing />} />
           </Route>
         <Route element={<RequireAuth allowedRoles={["admin"]}/>} >
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin/register" element={<Register />} />
-          <Route path="/admin/edit/:id" element={<Register />} />
+          <Route path="/admin/edit/:matricule" element={<Register />} />
        </Route>
 
        

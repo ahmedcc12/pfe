@@ -44,7 +44,7 @@ app.use('/api/auth/resetpassword/:token', require('./routes/auth'));
 app.use(verifyJWT);
 app.use('/api/register', require('./routes/register'));
 app.use('/api/users', require('./routes/api/users'));
-app.use('/api/users/:_id', require('./routes/api/users'));
+app.use('/api/users/:matricule', require('./routes/api/users'));
 
 mongoose.connection.once('open', () => {
     console.log('Connected to MongoDB');

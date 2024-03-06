@@ -8,8 +8,8 @@ router.route('/')
     .get(verifyRoles(ROLES_LIST.Admin), usersController.getAllUsers)
     .delete(verifyRoles(ROLES_LIST.Admin), usersController.deleteUser);
 
-router.route('/:_id')
-    .get(verifyRoles(ROLES_LIST.Admin), usersController.getUser)
+router.route('/:matricule')
+    .get(usersController.getUser)
     .delete(verifyRoles(ROLES_LIST.Admin), usersController.deleteUser)
     .put(verifyRoles(ROLES_LIST.Admin), usersController.updateUser);
 

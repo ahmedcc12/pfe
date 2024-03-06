@@ -5,7 +5,7 @@
     import Swal from "sweetalert2";
     import { Link } from "react-router-dom";
     import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
+    import { faTrash, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
 
 
     const Users = () => {
@@ -13,7 +13,7 @@ import { faTrash, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
         const axiosPrivate = useAxiosPrivate();
         const navigate = useNavigate();
         const location = useLocation();
-        const { _id } = useParams();
+        const { matricule } = useParams();
         const [totalPages, setTotalPages] = useState(1);
         const [limit , setLimit] = useState(20);
         const [currentPage, setCurrentPage] = useState(0);
@@ -41,7 +41,7 @@ import { faTrash, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
             //localStorage.setItem('currentPage', currentPage); // Store current page in local storage
         }, [currentPage, search]);
 
-        const deleteUser = async (_id) => {
+        const deleteUser = async (matricule) => {
             const result = await Swal.fire({
                 title: 'Are you sure?',
                 text: 'You will not be able to recover this user!',
@@ -53,7 +53,7 @@ import { faTrash, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
         
             if (result.isConfirmed) {
                 try {
-                    await axiosPrivate.delete(`/users/${_id}`);
+                    await axiosPrivate.delete(`/users/${matricule}`);
                     fetchUsers();
                     Swal.fire(
                         'Deleted!',
@@ -72,8 +72,8 @@ import { faTrash, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
         };
         
 
-        const editUser =(_id) => {
-        navigate(`/admin/edit/${_id}`);
+        const editUser =(matricule) => {
+        navigate(`/admin/edit/${matricule}`);
         }
 
     
@@ -162,14 +162,14 @@ import { faTrash, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
       <button 
         type="button" 
         className="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900"
-        onClick={() => deleteUser(user._id)}
+        onClick={() => deleteUser(user.matricule)}
       >
         <FontAwesomeIcon icon={faTrash} />
       </button>
       <button 
         type="button" 
         className="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" 
-        onClick={() => editUser(user._id)}
+        onClick={() => editUser(user.matricule)}
       >
         <FontAwesomeIcon icon={faPencilAlt} />
       </button>

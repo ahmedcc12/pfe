@@ -17,12 +17,12 @@ const handleLogin = async (req, res) => {
     if (match) {
         const role = foundUser.role;
         const access = foundUser.access;
-        const email = foundUser.email;
+        const matricule = foundUser.matricule;
         // create JWTs
         const accessToken = jwt.sign(
             {
                 "UserInfo": {
-                    "user": foundUser.username,
+                    "matricule": foundUser.matricule,
                     "role": role
                 }
             },
@@ -30,22 +30,23 @@ const handleLogin = async (req, res) => {
             { expiresIn: '10s' }
         );
         const refreshToken = jwt.sign(
-            { "username": foundUser.username },
+            { "matricule": foundUser.matricule },
             process.env.REFRESH_TOKEN_SECRET,
             { expiresIn: '1d' }
         );
         // Saving refreshToken with current user
-        foundUser.refreshToken = refreshToken;
-        const result = await foundUser.save();
 
+        foundUser.refreshToken = refreshToken;
+        await foundUser.save();
 
         // Creates Secure Cookie with refresh token
         res.cookie('jwt', refreshToken, { httpOnly: true, secure: true, sameSite: 'None', maxAge: 24 * 60 * 60 * 1000 });
 
         // Send authorization roles and access token to user
-        res.json({ role, accessToken , access});
+        res.json({ matricule ,role, accessToken , access});
 
         console.log("User logged in");
+        
 
     } else {
         res.sendStatus(401);

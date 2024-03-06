@@ -6,8 +6,8 @@ require('dotenv').config();
 
 
 const handleNewUser = async (req, res) => {
-    const { matricule, email, firstname, lastname, department, role, access } = req.body;
-
+    const { newMatricule, email, firstname, lastname, department, role, access } = req.body;
+    const matricule = newMatricule;
     if (!matricule || !email || !firstname || !lastname || !department  || !role) {
         return res.status(400).json({ 'message': 'Missing required fields.' });
     }
@@ -31,13 +31,11 @@ const handleNewUser = async (req, res) => {
 
         const hashedPwd = await bcrypt.hash(password, 10);
 
-        for (let i = 0; i < 2000; i++) {
-
         const result = await User.create({
-            matricule: matricule + i.toString(),
-            email: email+ i.toString(),
-            firstname: firstname+ i.toString(),
-            lastname: lastname+ i.toString(),
+            matricule: matricule ,
+            email: email,
+            firstname: firstname,
+            lastname: lastname,
             department: department,
             password: hashedPwd,
             role: role,
@@ -45,7 +43,7 @@ const handleNewUser = async (req, res) => {
             refreshToken: '',
             resetToken: ''
         });
-    }
+    
         const mailOptions = {
             from: process.env.MAIL,
             to: email,

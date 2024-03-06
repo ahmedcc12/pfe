@@ -19,11 +19,6 @@ export default function LoginPage() {
     setError('');
 }, [email, pwd])
 
-  useEffect(() => {
-    if (auth.accessToken) {
-      navigate("/");
-    }
-  }, [auth, navigate]);
 
   async function handleLoginSubmit(ev) {
     ev.preventDefault();
@@ -40,8 +35,10 @@ export default function LoginPage() {
           const accessToken = response?.data?.accessToken;
           const role = response?.data?.role;
           const access = response?.data?.access;
+          const matricule= response?.data?.matricule;
                           
-          setAuth({ email, accessToken, role, access });
+          setAuth({ matricule, accessToken, role, access });
+          console.log('auth', auth);
       
       }
   } 
@@ -79,9 +76,8 @@ export default function LoginPage() {
                 onChange={(ev) => setEmail(ev.target.value)}
                 required
               />
-              <input
-                type="password"
-                placeholder="password"
+                    <input id="Password" name="Password" type="Password" className="w-full py-3 border border-slate-200 rounded-lg px-3 focus:outline-none focus:border-slate-500 hover:shadow"
+                placeholder="Password"
                 value={pwd}
                 onChange={(ev) => setpwd(ev.target.value)}
                 required

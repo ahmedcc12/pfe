@@ -1,7 +1,8 @@
 import  { useState,useEffect } from 'react';
-import { useParams ,Link} from 'react-router-dom';
+import { useParams ,Link, Navigate} from 'react-router-dom';
 import axios from '../api/axios';
 import Swal from "sweetalert2";
+import useAuth from '../hooks/useAuth';
 
 const ResetPassword = () => {
   const { token } = useParams();
@@ -9,6 +10,7 @@ const ResetPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [message, setMessage] = useState('');
   const [tokenValid, setTokenValid] = useState(false);
+  const { auth } = useAuth();
 
   useEffect(() => {
     console.log(token);
@@ -31,7 +33,17 @@ const ResetPassword = () => {
     }
     try {
       const response = await axios.post('/auth/resetpassword', { token, newPassword, confirmPassword });
-      setMessage(response.data.message);
+      Swal.fire({
+        title: 'Success',
+        text: 'Password updated',
+        icon: 'success',
+        confirmButtonText: 'Ok',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate('/');
+        }
+      });
+      
     } catch (error) {
       setMessage(error.response.data.message);
       return;
@@ -73,12 +85,16 @@ const ResetPassword = () => {
                       </svg>
                       <span>Reset password</span>
                 </button>
+                {!auth.accessToken ? (
                 <p className="text-center"> <a href="/login" className="text-black font-medium inline-flex space-x-1 items-center"><span>Login</span><span><svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                   </svg></span></a></p>
+                ) : (
+                null 
+                )}
+                        {message && <p>{message}</p>}
             </div>
         </form>
-        {message && <p>{message}</p>}
     </div>
     ) : (
       <div>
