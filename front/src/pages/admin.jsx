@@ -13,8 +13,6 @@ const Homepage = () => {
             <Users />   
             <br />
 
-        <p>register a user : </p>
-        <Link to="/admin/register">register</Link>
         </div>
     );
     }

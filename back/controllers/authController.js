@@ -1,6 +1,8 @@
 const User = require('../model/User');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const mailerConfig = require('../config/mailerConfig');
+require('dotenv').config();
 
 const handleLogin = async (req, res) => {
     const { email, pwd } = req.body;
@@ -20,7 +22,7 @@ const handleLogin = async (req, res) => {
         const accessToken = jwt.sign(
             {
                 "UserInfo": {
-                    "email": foundUser.email,
+                    "user": foundUser.username,
                     "role": role
                 }
             },
@@ -50,4 +52,5 @@ const handleLogin = async (req, res) => {
     }
 }
 
-module.exports = { handleLogin };
+
+module.exports = { handleLogin ,};

@@ -2,15 +2,29 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
+
+    _id: String,
+    matricule: {
+        type: String,
+        required: true,
+        unique: true
+    },
     email:{ 
         type : String,
         required: true,
         unique: true
     },
-    name:{ 
+    firstname:{ 
         type : String,
         required: true,
-        unique: true
+    },
+    lastname:{
+        type : String,
+        required: true,
+    },
+    department:{
+        type : String,
+        required: true,
     },
     password:{ 
         type : String,
@@ -22,7 +36,8 @@ const userSchema = new Schema({
         enum: ['admin', 'user']
     },
     access: [String],
-    refreshToken: String
+    refreshToken: String,
+    resetToken: String
 });
 
 module.exports = mongoose.model('User', userSchema);

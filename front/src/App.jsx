@@ -1,6 +1,3 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import { useLocation } from 'react-router-dom'
 import './App.css'
 import Navbar, { NavbarDefault } from './components/navbar'
@@ -17,16 +14,19 @@ import {
 } from "react-router-dom";
 import RequireAuth from './components/RequireAuth'
 import PublicRoute from './components/publicRoute'
+import PersistLogin from './components/PersistLogin'
+import Unauthorized from './components/Unauthorized'
+import Profile from './pages/profile'
+import ForgotPassword from './components/ForgotPassword'
+import ResetPassword from './components/ResetPassword'
 
 function App() {
-  const [count, setCount] = useState(0)
   const location = useLocation(); // Get current location
-  const renderNavbarDefault = location.pathname !== '/login';
-
+  
   return (
     <div>
       
-      {renderNavbarDefault && <NavbarDefault />}
+      <NavbarDefault />
         <Routes>
           
         <Route 
@@ -37,13 +37,38 @@ function App() {
           </PublicRoute>
         } 
       />
+              <Route 
+        path="/forgotpassword" 
+        element={
+          <PublicRoute>
+            <ForgotPassword />
+          </PublicRoute>
+        } 
+      />
+                    <Route 
+        path="/resetpassword/:token" 
+        element={
+          <PublicRoute>
+            <ResetPassword />
+          </PublicRoute>
+        } 
+      />
+
+        <Route element={<PersistLogin/>} >
         <Route element={<RequireAuth allowedRoles={["user","admin"]}/>} >
           <Route path="/" element={<Homepage />} />
+          <Route path="/Profile" element={<Profile />} />
+          <Route path="/unauthorized" element={<Unauthorized />} />
+          <Route path="/missing" element={<Missing />} />
           </Route>
         <Route element={<RequireAuth allowedRoles={["admin"]}/>} >
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin/register" element={<Register />} />
+          <Route path="/admin/edit/:id" element={<Register />} />
        </Route>
+
+       
+        </Route> 
 
         <Route path="*" element={<Missing/>}/>
         </Routes>

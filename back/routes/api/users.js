@@ -10,6 +10,7 @@ router.route('/')
 
 router.route('/:_id')
     .get(verifyRoles(ROLES_LIST.Admin), usersController.getUser)
-    .delete(verifyRoles(ROLES_LIST.Admin), usersController.deleteUser);
+    .delete(verifyRoles(ROLES_LIST.Admin), usersController.deleteUser)
+    .put(verifyRoles(ROLES_LIST.Admin), usersController.updateUser);
 
 module.exports = router;

@@ -1,32 +1,25 @@
 import {  useNavigate } from "react-router-dom";
-import { useContext, useEffect, useState} from "react";
-import useLogin from "../hooks/useLogin";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import {  useEffect, useState} from "react";
 import useAuth from "../hooks/useAuth";
+import axios from "../api/axios";
+import { Link } from "react-router-dom";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [pwd, setpwd] = useState("");
   const [redirect, setRedirect] = useState(false);
-  const { handleLogin, loading, error } = useLogin();
   const navigate = useNavigate();
-  const { auth } = useAuth();
+  const { auth,setAuth,persist,setPersist } = useAuth();
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const showToastMessage = (message, type, redirectToLogin = false) => {
-    toast[type](message, {
-      position: toast.POSITION.TOP_RIGHT,
-      onClose: () => {
-        if (redirectToLogin) {
-          // Redirect to the login page after the toast is closed
-          navigate('/login');
-        }
-      },
-    });
-  };
+
 
   useEffect(() => {
-    // If user is logged in, redirect to homepage
+    setError('');
+}, [email, pwd])
+
+  useEffect(() => {
     if (auth.accessToken) {
       navigate("/");
     }
@@ -35,14 +28,40 @@ export default function LoginPage() {
   async function handleLoginSubmit(ev) {
     ev.preventDefault();
 
-    if (useAuth.accessToken) {
-      console.log('accessToken',useAuth.accessToken)
-      console.log('auth',useAuth)
-    }
-    const {error}=await handleLogin(email, password);
-    if(!error)
-    navigate("/");
+    try{
+      const response = await axios.post("/auth", 
+      JSON.stringify({ email, pwd }),
+      {
+          headers: { 'Content-Type': 'application/json' },
+          withCredentials: true
+      }
+      );
+      if(response.status === 200){
+          const accessToken = response?.data?.accessToken;
+          const role = response?.data?.role;
+          const access = response?.data?.access;
+                          
+          setAuth({ email, accessToken, role, access });
+      
+      }
+  } 
+  catch (err) {
+      console.log(err);
+      setError(err.response?.data?.message || "An error occurred");
   }
+  setLoading(false);
+
+  console.log('Loading:', loading, 'Error:', error)
+
+}
+
+  const togglePersist = () => {
+    setPersist(prev => !prev);
+  }
+
+  useEffect(() => {
+    localStorage.setItem('persist', persist);
+  },[persist])
 
   return (
     <div>
@@ -58,14 +77,38 @@ export default function LoginPage() {
                 placeholder="email"
                 value={email}
                 onChange={(ev) => setEmail(ev.target.value)}
+                required
               />
               <input
                 type="password"
                 placeholder="password"
-                value={password}
-                onChange={(ev) => setPassword(ev.target.value)}
+                value={pwd}
+                onChange={(ev) => setpwd(ev.target.value)}
+                required
               />
+<div className="flex items-center justify-between">
+  <div className="flex items-center">
+    <input
+      type="checkbox"
+      id="persist"
+      checked={persist}
+      onChange={togglePersist}
+    />
+    <label htmlFor="persist" className="ml-2">
+      Remember Me
+    </label>
+  </div>
+  <div className="text-center py-2 text-gray-500">
+    <Link className="underline text-black" to={"/forgotpassword"}>
+      Forgot your password?
+    </Link>
+  </div>
+</div>
+
+
               <button disabled={loading} className="primary">Login</button>
+              {error && <div className="text-red-500">{error}</div>}
+
             {/*  <div className="text-center py-2 text-gray-500">
                 Don't have an account yet?{" "}
                 <Link className="underline text-black" to={"/register"}>
@@ -76,7 +119,6 @@ export default function LoginPage() {
           </div>
         </div>
       )}
-      <ToastContainer />
     </div>
   );
 }

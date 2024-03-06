@@ -1,17 +1,21 @@
-// useLogout.jsx
-import useAuth from "../hooks/useAuth";
-import { useContext } from "react";
+import axios from "../api/axios";
+import useAuth from "./useAuth";
 
-export default function useLogout() {
+const useLogout = () => {
     const { setAuth } = useAuth();
 
-    const logout = () => {
-        // Clear authentication state
+    const logout = async () => {
         setAuth({});
-        //clear local storage
-        localStorage.removeItem('accessToken');
+        try {
+            const response = await axios('/logout', {
+                withCredentials: true
+            });
+        } catch (err) {
+            console.error(err);
+        }
+    }
 
-    };
-
-    return { logout };
+    return logout;
 }
+
+export default useLogout

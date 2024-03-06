@@ -10,6 +10,8 @@ const credentials = require('./middleware/credentials');
 const mongoose = require('mongoose');
 const connectDB = require('./config/db');
 const PORT = process.env.PORT || 3500;
+var nodemailer = require('nodemailer');
+
 
 // Connect to MongoDB
 connectDB();
@@ -35,10 +37,14 @@ app.use(cookieParser());
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/refresh', require('./routes/refresh'))
 app.use('/api/logout', require('./routes/logout'));
+app.use('/api/auth/forgotpassword', require('./routes/auth'));
+app.use('/api/auth/resetpassword', require('./routes/auth'));
+app.use('/api/auth/resetpassword/:token', require('./routes/auth'));
 
 app.use(verifyJWT);
 app.use('/api/register', require('./routes/register'));
 app.use('/api/users', require('./routes/api/users'));
+app.use('/api/users/:_id', require('./routes/api/users'));
 
 mongoose.connection.once('open', () => {
     console.log('Connected to MongoDB');
