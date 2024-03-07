@@ -50,8 +50,6 @@ const handleForgotPassword = async (req, res) => {
 
         if (!token) return res.status(400).json({ 'message': 'Token is required.' });
 
-
-
         jwt.verify(token, process.env.RESET_TOKEN_SECRET, async (err, decoded) => {
             if (err) {
                 return res.status(401).json({ 'message': 'Invalid or expired token' });
@@ -82,12 +80,32 @@ const handleForgotPassword = async (req, res) => {
             };
             const { error } = passwordComplexity(complexityOptions).validate(newPassword);
             if (error) {
-                return res.status(400).json({ 'message': error.details[0].message });
+                const errorMessage = error.details[0].message.replace('"value"', 'Password');
+                console.log(errorMessage);
+                return res.status(400).json({ 'message': errorMessage });
             }
             const hashedPwd = await bcrypt.hash(newPassword, 10);
             foundUser.password = hashedPwd;
             foundUser.resetToken = '';
             await foundUser.save();
+
+            const mailOptions = {
+                from: process.env.MAIL,
+                to: foundUser.email,
+                subject: "Your password has been updated",
+                text: `Hello ${foundUser.firstname}!
+                Your password has been successfully updated.
+                `
+            };
+
+            mailerConfig.transporter.sendMail(mailOptions, (err, info) => {
+                if (err) {
+                    console.log(err);
+                } else {
+                    console.log(info);
+                }
+            });
+
             res.json({ 'message': 'Password updated' });
         });
     }
@@ -97,7 +115,6 @@ const handleForgotPassword = async (req, res) => {
 
         if (!token) return res.status(400).json({ 'message': 'Token is required.' });
 
-        //check if token is in db
         const foundToken = await User.findOne({ resetToken: token }).exec();
         if (!foundToken) {
             return res.status(404).json({ 'message': 'Token not found or expired' });

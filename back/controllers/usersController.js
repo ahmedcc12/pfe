@@ -10,7 +10,16 @@ const getAllUsers = async (req, res) => {
     try {
         let query = {};
         if (search !== '') {
-            query = { $or: [{ email: { $regex: search, $options: 'i' } }] }; // Example search by email
+            query = {
+                $or: [
+                    { matricule: { $regex: search, $options: 'i' } },
+                    { email: { $regex: search, $options: 'i' } },
+                    { firstname: { $regex: search, $options: 'i' } },
+                    { lastname: { $regex: search, $options: 'i' } },
+                    { department: { $regex: search, $options: 'i' } },
+                    { role: { $regex: search, $options: 'i' } }
+                ]
+            };
         }
 
         const users = await User.find(query)

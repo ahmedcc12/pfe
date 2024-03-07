@@ -15,15 +15,18 @@ export default function ProfileModal({ onClose }) {
         Swal.fire({
           title: "User Details",
           html: `
-          <div class="mb-4">
-            <p><strong>Matricule:</strong> ${user.matricule}</p>
-            <p><strong>First Name:</strong> ${user.firstname}</p>
-            <p><strong>Last Name:</strong> ${user.lastname}</p>
-            <p><strong>Email:</strong> ${user.email}</p>
-            <p><strong>Department:</strong> ${user.department}</p>
-          </div>
-          <button id="resetPasswordBtn" class="swal2-confirm swal2-styled mt-4">Reset Password</button>
-        `,
+            <div class="swal-flex-container">
+            <p><strong>Matricule:</strong><span>${user.matricule}</span></p>
+            <p><strong>First Name:</strong><span>${user.firstname}</span></p>
+            <p><strong>Last Name:</strong><span>${user.lastname}</span></p>
+            <p><strong>Email:</strong><span>${user.email}</span></p>
+            <p><strong>Department:</strong><span>${user.department}</span></p>        
+            </div>
+            <button id="resetPasswordBtn" class="swal2-confirm swal2-styled mt-4">Reset Password</button>
+          `,
+          customClass: {
+            container: "swal-flex-container",
+          },
           didOpen: () => {
             const resetPasswordBtn = document.getElementById("resetPasswordBtn");
             resetPasswordBtn.addEventListener("click", () => {
@@ -74,9 +77,13 @@ export default function ProfileModal({ onClose }) {
 
   useEffect(() => {
     return () => {
-      onClose(); // Close the modal when unmounting the component
+      onClose();
     };
   }, [onClose]);
 
-  return <></>;
+  
+  return (
+    <>
+    </>
+  );
 }
