@@ -27,7 +27,7 @@
                 setTotalPages(response.data.totalPages);
             } catch (err) {
                 console.error(err);
-                navigate('/login', { state: { from: location }, replace: true });
+                //navigate('/login', { state: { from: location }, replace: true });
             }
         };
 
@@ -72,7 +72,7 @@
         
 
         const editUser =(matricule) => {
-        navigate(`/admin/edit/${matricule}`);
+        navigate(`/admin/user/edit/${matricule}`);
         }
 
     
@@ -99,7 +99,7 @@
                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-48 pl-10 p-2.5 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500 ml-10" 
                 placeholder="Search for users"
             />
-            <Link to="/admin/register" className="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-6 border border-gray-400 rounded shadow ml-4">
+            <Link to="/admin/user/register" className="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-6 border border-gray-400 rounded shadow ml-4">
                 add user
             </Link>
         </div>
@@ -159,7 +159,6 @@
             {user.role === 'admin' ? <td></td> :
             <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">
             
-            <div className="flex justify-between items-center">
       <button 
         type="button" 
         className="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900"
@@ -174,7 +173,6 @@
       >
         <FontAwesomeIcon icon={faPencilAlt} />
       </button>
-    </div>
             </td>
             }
             </tr>

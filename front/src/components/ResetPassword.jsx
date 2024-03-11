@@ -18,7 +18,6 @@ const ResetPassword = () => {
 
   useEffect(() => {
     setTokenValid(true);
-    console.log(token);
     axios.get(`/auth/resetpassword/${token}`)
       .then(response => {
         setTokenValid(true);

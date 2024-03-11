@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import useAxiosPrivate from "../hooks/useAxiosPrivate"; 
 import { useNavigate, useParams } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
+import { MultiSelect } from "react-multi-select-component";
 
 export default function RegisterPage() {
   const {matricule} = useParams();
@@ -11,7 +12,6 @@ export default function RegisterPage() {
   const [department, setDepartment] = useState('');
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('user');
-  const [access, setAccess] = useState([]);
   const axiosPrivate = useAxiosPrivate();
   const { auth } = useAuth();
   const userrole = auth.role;
@@ -19,6 +19,9 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const Navigate = useNavigate();
+  const [allBots, setAllBots] = useState([]);
+  const [selectedBots, setSelectedBots] = useState([]);
+
 
   useEffect (() => {
     if (!matricule) 
@@ -34,6 +37,12 @@ export default function RegisterPage() {
         setNewMatricule(data.matricule);
         setEmail(data.email);
         setRole(data.role);
+        setSelectedBots(data.access.map(bot => {
+          return {label : bot.name,
+                  value : bot._id};
+        }));
+          
+        console.log("selectedBots", selectedBots);
       } catch (error) {
         console.error("Error fetching user", error);
         //redirect user to /missing route
@@ -70,7 +79,7 @@ export default function RegisterPage() {
           lastname,
           department,
           role,
-          access,
+          selectedBots,
           userrole
         });
       } else {
@@ -81,7 +90,7 @@ export default function RegisterPage() {
           lastname,
           department,
           role,
-          access,
+          selectedBots,
           userrole
         });
       }
@@ -95,6 +104,31 @@ export default function RegisterPage() {
     }
   }
 
+  useEffect(() => {
+    const fetchBots = async () => {
+      try {
+        const { data } = await axiosPrivate.get("/bots");
+        setAllBots(data.bots);
+      } catch (error) {
+        console.error("Error fetching bots", error);
+      }
+    };
+    fetchBots();
+  }, []);
+  
+  const options = allBots.map((bot) => ({
+    label: bot.name,
+    value: bot._id,
+  }));
+
+  const handleChange = (selectedOptions) => {
+    setSelectedBots(selectedOptions);
+  };
+
+  useEffect(() => {
+    console.log("selectedBots", selectedBots);
+  }, [selectedBots]);
+
   return (
     <div>
       {success ? (
@@ -102,7 +136,7 @@ export default function RegisterPage() {
       ) : (
         <div className="mt-4 grow flex items-center justify-around">
           <div className="mb-64">
-            <h1 className="text-4xl text-center mb-4">{matricule ?  <p>Edit</p> : <p>Register</p> }</h1>
+            <h1 className="text-4xl text-center mb-4">{matricule ?  <>Edit</> : <>Register</> }</h1>
             <form className="max-w-md mx-auto" onSubmit={registerUser}>
             <input
                 required
@@ -146,11 +180,21 @@ export default function RegisterPage() {
                 <option value="user">User</option>
                 <option value="admin">Admin</option>
               </select>
+              {(allBots.length > 0 && role=="user")&& (
+                <MultiSelect
+                options={options}
+                value={selectedBots}
+                onChange={handleChange}
+                labelledBy="Select"
+              />
+              )}
               {matricule ? (
                 <button disabled={loading} className="primary">Update User</button>
               ) : (
                 <button disabled={loading} className="primary">Sign Up</button>
               )}
+
+
               {errMsg && <div className="error">{errMsg}</div>}
             </form>
           </div>

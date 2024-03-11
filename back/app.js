@@ -24,13 +24,10 @@ app.use(credentials);
 // Cross Origin Resource Sharing
 app.use(cors(corsOptions));
 
-// built-in middleware to handle urlencoded form data
 app.use(express.urlencoded({ extended: false }));
 
-// built-in middleware for json 
 app.use(express.json());
 
-//middleware for cookies
 app.use(cookieParser());
 
 // routes
@@ -44,7 +41,11 @@ app.use('/api/auth/resetpassword/:token', require('./routes/auth'));
 app.use(verifyJWT);
 app.use('/api/register', require('./routes/register'));
 app.use('/api/users', require('./routes/api/users'));
+app.use('/api/users/userbots', require('./routes/api/users'));
 app.use('/api/users/:matricule', require('./routes/api/users'));
+app.use('/api/bots', require('./routes/api/bot'));
+app.use('/api/bots/:name', require('./routes/api/bot'));
+
 
 mongoose.connection.once('open', () => {
     console.log('Connected to MongoDB');

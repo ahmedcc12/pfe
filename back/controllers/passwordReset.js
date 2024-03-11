@@ -20,7 +20,6 @@ const handleForgotPassword = async (req, res) => {
     
     foundUser.resetToken = resetToken;
     
-    await foundUser.save();
 
     const mailOptions = {
         from: process.env.MAIL,
@@ -33,15 +32,18 @@ const handleForgotPassword = async (req, res) => {
         `
     };
     
-    mailerConfig.transporter.sendMail(mailOptions, (err, info) => {
+    mailerConfig.transporter.sendMail(mailOptions, async (err, info) => {
         if (err) {
             console.log(err);
+            res.status(500).json({ 'message': 'Error sending email' });
+
         } else {
             console.log(info);
+            await foundUser.save();
+            res.json({ 'message': 'Email sent' });
+
         }
     });
-
-    res.json({ 'message': 'Email sent' });
     
 }
 

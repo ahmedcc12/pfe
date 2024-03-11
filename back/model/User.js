@@ -34,7 +34,10 @@ const userSchema = new Schema({
         required: true,
         enum: ['admin', 'user']
     },
-    access: [String],
+    access: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Bot'
+    }],
     refreshToken: String,
     resetToken: String
 });

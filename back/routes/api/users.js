@@ -6,7 +6,9 @@ const verifyRoles = require('../../middleware/verifyRoles');
 
 router.route('/')
     .get(verifyRoles(ROLES_LIST.Admin), usersController.getAllUsers)
-    .delete(verifyRoles(ROLES_LIST.Admin), usersController.deleteUser);
+
+router.route('/userbots')
+    .get(usersController.getUserBots)
 
 router.route('/:matricule')
     .get(usersController.getUser)

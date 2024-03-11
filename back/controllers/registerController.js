@@ -3,10 +3,11 @@ const bcrypt = require('bcrypt');
 const validator = require('email-validator');
 const mailerConfig = require('../config/mailerConfig');
 require('dotenv').config();
+const mongoose = require('mongoose');
 
 
 const handleNewUser = async (req, res) => {
-    const { newMatricule, email, firstname, lastname, department, role, access } = req.body;
+    const { newMatricule, email, firstname, lastname, department, role, selectedBots } = req.body;
     const matricule = newMatricule;
     if (!matricule || !email || !firstname || !lastname || !department  || !role) {
         return res.status(400).json({ 'message': 'Missing required fields.' });
@@ -31,6 +32,8 @@ const handleNewUser = async (req, res) => {
 
         const hashedPwd = await bcrypt.hash(password, 10);
 
+        const access = selectedBots.map(bot => bot.value);
+        
         const result = await User.create({
             matricule: matricule ,
             email: email,

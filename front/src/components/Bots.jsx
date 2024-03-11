@@ -1,49 +1,89 @@
-
-import React from 'react';
-import useAuth from '../hooks/useAuth';
-import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import { useState, useEffect } from "react";
-import Pagination from "../components/Pagination";
+import useAxiosPrivate from "../hooks/useAxiosPrivate";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
+import Pagination from "./Pagination";
 import Swal from "sweetalert2";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faDownload} from '@fortawesome/free-solid-svg-icons';
+import { faTrash, faPencilAlt ,faDownload} from '@fortawesome/free-solid-svg-icons';
+import useAuth from "../hooks/useAuth";
 
-const Homepage = () => {
+
+const Bots = () => {
+    const [bots, setBots] = useState();
+    const axiosPrivate = useAxiosPrivate();
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { name } = useParams();
+    const [totalPages, setTotalPages] = useState(1);
     const [limit , setLimit] = useState(20);
     const [currentPage, setCurrentPage] = useState(0);
     const [search, setSearch] = useState('');
-    const axiosPrivate = useAxiosPrivate();
-    const [bots, setBots] = useState();
-    const [totalPages, setTotalPages] = useState(1);
     const {auth} = useAuth();
 
     const fetchBots = async () => {
         try {
-            const response = await axiosPrivate.get(`/users/userbots?page=${currentPage+1}&limit=${limit}&search=${search}&matricule=${auth.matricule}`);
-            setBots(response.data);
+            const response = await axiosPrivate.get(`/bots?page=${currentPage+1}&limit=${limit}&search=${search}`);
+            setBots(response.data.bots);
             setTotalPages(response.data.totalPages);
         } catch (err) {
             console.error(err);
             //navigate('/login', { state: { from: location }, replace: true });
         }
-    }
+    };
 
     useEffect(() => {
         setCurrentPage(0);
     }, [search]);
 
+ 
     useEffect(() => {
         fetchBots();
     }, [currentPage, search]);
 
+    const deleteBot = async (name) => {
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: 'You will not be able to recover this bot!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'No, keep it'
+        });
+    
+        if (result.isConfirmed) {
+            try {
+                await axiosPrivate.delete(`/bots/${name}`);
+                fetchBots();
+                Swal.fire(
+                    'Deleted!',
+                    'Bot has been deleted.',
+                    'success'
+                );
+            } catch (error) {
+                Swal.fire(
+                    'Error!',
+                    'Failed to delete bot.',
+                    'error'
+                );
+            }
+        } else {
+        }
+    };
+    
+
+    const editBot =(name) => {
+    navigate(`/admin/bot/edit/${name}`);
+    }
+
+
+
     return (
         <article>
-        <div className="container mx-auto mt-8">
-        <h2 className="text-2xl font-bold mb-4">Homepage</h2>
-        <p>Welcome to the homepage</p>
-        <br />
-        <div className="p-4">
+            <h2>Bots List</h2>
+
+                
+                <div className="p-4">
     <label htmlFor="table-search" className="sr-only">Search</label>
     <div className="relative mt-1 flex items-center">
         
@@ -111,8 +151,29 @@ const Homepage = () => {
         <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">{bot.status}</td>
 
         <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">  <a href={bot.configuration?.downloadURL} target="_blank" rel="noopener noreferrer">
-        <FontAwesomeIcon icon={faDownload} />
-</a></td>
+<FontAwesomeIcon icon={faDownload} />
+
+      </a></td>
+         
+        {auth.role == "user" ? null :
+        <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+        
+  <button 
+    type="button" 
+    className="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900"
+    onClick={() => deleteBot(bot.name)}
+  >
+    <FontAwesomeIcon icon={faTrash} />
+  </button>
+  <button 
+    type="button" 
+    className="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" 
+    onClick={() => editBot(bot.name)}
+  >
+    <FontAwesomeIcon icon={faPencilAlt} />
+  </button>
+        </td>
+        }
         </tr>
     )
     )}
@@ -127,7 +188,6 @@ const Homepage = () => {
 </>
 ) : <p>No bots to display</p>}
 
-        </div>
         </article>
 
 
@@ -135,4 +195,4 @@ const Homepage = () => {
     );
 };
 
-export default Homepage;
+export default Bots;

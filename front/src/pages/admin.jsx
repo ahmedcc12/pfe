@@ -1,20 +1,36 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import Users from '../components/Users.jsx';
-
+import React, { useState } from 'react';
+import Users from '../components/Users';
+import Bots from '../components/Bots';
 
 const Homepage = () => {
+    const [activeComponent, setActiveComponent] = useState('users');
+
     return (
         <div className="container mx-auto mt-8">
-        <h2 className="text-2xl font-bold mb-4">Admin Homepage</h2>
-        <p>Welcome to the Admin homepage</p>
+            <div className="flex justify-center">
+                <button
+                    className={`px-4 py-2 mr-4 rounded-md ${
+                        activeComponent === 'users' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'
+                    }`}
+                    onClick={() => setActiveComponent('users')}
+                >
+                    Users
+                </button>
+                <button
+                    className={`px-4 py-2 rounded-md ${
+                        activeComponent === 'bots' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'
+                    }`}
+                    onClick={() => setActiveComponent('bots')}
+                >
+                    Bots
+                </button>
+            </div>
 
-        <br />
-            <Users />   
-            <br />
-
+            <div className="mt-8">
+                {activeComponent === 'users' ? <Users /> : <Bots />}
+            </div>
         </div>
     );
-    }
+};
 
 export default Homepage;

@@ -58,7 +58,7 @@ const getUser = async (req, res) => {
     if (!req?.params?.matricule) return res.status(400).json({ "message": 'User ID required' });
   
     try {
-        const user = await User.findOne({ matricule: req.params.matricule }).exec();
+        const user = await User.findOne({ matricule: req.params.matricule }).populate('access').exec();
         if (!user) {
         console.log('User not founddd');
         return res.status(404).json({ error: 'User not found' });
@@ -75,7 +75,7 @@ const getUser = async (req, res) => {
 const updateUser = async (req, res) => {
     if (!req.params?.matricule) return res.status(400).json({ "message": 'User ID required' });
 
-    const { newMatricule, email, firstname, lastname, department, role, access } = req.body;
+    const { newMatricule, email, firstname, lastname, department, role, selectedBots } = req.body;
 
     if (!newMatricule || !email || !firstname || !lastname || !department || !role) {
         return res.status(400).json({ 'message': 'Missing required fields.' });
@@ -110,6 +110,9 @@ const updateUser = async (req, res) => {
             }
         }
 
+        const access = selectedBots.map(bot => bot.value);
+
+    
         existingUser.matricule = newMatricule;
         existingUser.email = email;
         existingUser.firstname = firstname;
@@ -125,11 +128,70 @@ const updateUser = async (req, res) => {
     }
 };
 
+const getUserBots = async (req, res) => {
+    if (!req?.query?.matricule) return res.status(400).json({ "message": 'User ID required' });
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+    const search = req.query.search || '';
+
+    try {
+        console.log("Query parameters:", req.query);
+        let userQuery = User.aggregate([
+            { $match: { matricule: req.query.matricule } },
+            {
+                $lookup: {
+                    from: "bots",
+                    localField: "access",
+                    foreignField: "_id",
+                    as: "access"
+                }
+            },
+            {
+                $project: {
+                    access: {
+                        $filter: {
+                            input: "$access",
+                            as: "bot",
+                            cond: {
+                                $or: [
+                                    { $regexMatch: { input: "$$bot.name", regex: search, options: "i" } },
+                                    { $regexMatch: { input: "$$bot.description", regex: search, options: "i" } }
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            { $unwind: "$access" },
+            { $replaceRoot: { newRoot: "$access" } },
+            { $skip: skip },
+            { $limit: limit }
+        ]);
+        
+        
+
+        const user = await userQuery.exec();
+
+        if (!user || user.length === 0) {
+            return res.status(204).json({ 'message': `User ID ${req.query.matricule} not found` });
+        }
+        
+        res.json(user);
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ 'message': 'Internal server error' });
+    }
+}
+
 
 
 module.exports = {
     getAllUsers,
     deleteUser,
     getUser,
-    updateUser
+    updateUser,
+    getUserBots
 }

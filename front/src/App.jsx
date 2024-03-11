@@ -18,6 +18,7 @@ import PersistLogin from './components/PersistLogin'
 import Unauthorized from './components/Unauthorized'
 import ForgotPassword from './components/ForgotPassword'
 import ResetPassword from './components/ResetPassword'
+import AddBot from './pages/addBot'
 
 function App() {
   const location = useLocation(); // Get current location
@@ -61,8 +62,11 @@ function App() {
           </Route>
         <Route element={<RequireAuth allowedRoles={["admin"]}/>} >
           <Route path="/admin" element={<Admin />} />
-          <Route path="/admin/register" element={<Register />} />
-          <Route path="/admin/edit/:matricule" element={<Register />} />
+          <Route path="/admin/user/register" element={<Register />} />
+          <Route path="/admin/user/edit/:matricule" element={<Register />} />
+          <Route path="/admin/bot/add" element={<AddBot/>} />
+          <Route path="/admin/bot/edit/:name" element={<AddBot/>} />
+          
        </Route>
 
        

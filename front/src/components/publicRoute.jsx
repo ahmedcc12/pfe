@@ -6,10 +6,6 @@ import { useEffect } from 'react';
 const PublicRoute = ({ children }) => {
   const { auth } = useAuth();
 
-  useEffect(() => {
-    console.log('auth', auth);
-  }, [auth]);
-
   return auth.accessToken ? <Navigate to="/" replace /> : children;
 };
 
