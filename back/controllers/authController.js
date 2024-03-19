@@ -10,15 +10,15 @@ const handleLogin = async (req, res) => {
 
     const foundUser = await User.findOne({ email: email }).exec();
     if (!foundUser) {
-        return res.sendStatus(401); //Unauthorized 
+        return res.sendStatus(401).json({'message': 'Invalid email or password'})
     }
-    // evaluate password 
+
     const match = await bcrypt.compare(pwd, foundUser.password);
-    if (match) {
+
+    if(!match) return res.status(401).json({'message': 'Invalid email or password'})
+
         const role = foundUser.role;
-        const access = foundUser.access;
         const matricule = foundUser.matricule;
-        // create JWTs
         const accessToken = jwt.sign(
             {
                 "UserInfo": {
@@ -34,7 +34,6 @@ const handleLogin = async (req, res) => {
             process.env.REFRESH_TOKEN_SECRET,
             { expiresIn: '1d' }
         );
-        // Saving refreshToken with current user
 
         foundUser.refreshToken = refreshToken;
         await foundUser.save();
@@ -42,15 +41,10 @@ const handleLogin = async (req, res) => {
         // Creates Secure Cookie with refresh token
         res.cookie('jwt', refreshToken, { httpOnly: true, secure: true, sameSite: 'None', maxAge: 24 * 60 * 60 * 1000 });
 
-        // Send authorization roles and access token to user
-        res.json({ matricule ,role, accessToken , access});
+        res.json({ matricule ,role, accessToken });
 
         console.log("User logged in");
         
-
-    } else {
-        res.sendStatus(401);
-    }
 }
 
 

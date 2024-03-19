@@ -47,14 +47,14 @@ export default function ProfileModal({ onClose }) {
           },
         });
       } catch (err) {
-        console.error("error ",err);
+        console.error("error ", err);
       }
     };
-  
+
     fetchData();
   }, [auth.matricule, axiosPrivate]);
 
-  
+
   const sendResetPasswordEmail = async (email) => {
     try {
       await axios.post('/auth/forgotpassword', { email });
@@ -65,7 +65,7 @@ export default function ProfileModal({ onClose }) {
         confirmButtonText: "Ok",
       });
     } catch (err) {
-      console.error("error ",err);
+      console.error("error ", err);
       Swal.fire({
         title: "Error",
         text: "An error occurred",
@@ -81,7 +81,7 @@ export default function ProfileModal({ onClose }) {
     };
   }, [onClose]);
 
-  
+
   return (
     <>
     </>

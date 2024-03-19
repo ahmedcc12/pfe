@@ -3,7 +3,7 @@ import Users from '../components/Users';
 import Bots from '../components/Bots';
 
 const Homepage = () => {
-    const [activeComponent, setActiveComponent] = useState('users');
+    const [activeComponent, setActiveComponent] = useState(localStorage?.getItem('activeComponent') || 'users');
 
     return (
         <div className="container mx-auto mt-8">

@@ -1,5 +1,6 @@
 const { getDownloadURL, ref, uploadBytesResumable, deleteObject } = require('firebase/storage');
 const storage = require('../config/firebase');
+const sanitze = require('sanitize-filename');
 
 const uploadFile = async (file, folder) => {
     try {
@@ -8,7 +9,9 @@ const uploadFile = async (file, folder) => {
         }
 
         const dateTime = giveCurrentDateTime();
-
+        
+        file.originalname = sanitze(file.originalname);
+        
         const storageRef = ref(storage, `${folder}/${file.originalname + " " + dateTime}`);
 
         const metadata = {

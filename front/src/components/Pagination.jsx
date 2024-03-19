@@ -40,7 +40,8 @@ const Pagination = ({ setCurrentPage, currentPage, totalPages }) => {
           ) : null
         }
         onPageChange={handlePageClick}
-        pageRangeDisplayed={3}
+        pageRangeDisplayed={5}
+        marginPagesDisplayed={2}
         pageCount={totalPages}
         previousLabel={
           showPrevButton ? (
@@ -51,7 +52,7 @@ const Pagination = ({ setCurrentPage, currentPage, totalPages }) => {
         }
         containerClassName="flex items-center justify-center mt-8 mb-4"
         pageClassName="block border- border-solid border-lightGray hover:bg-lightGray w-10 h-10 flex items-center justify-center rounded-md mr-4"
-        activeClassName="bg-blue-500 text-white" // Set the active page class here
+        activeClassName="bg-blue-500 text-white"
       />
     </motion.div>
   );

@@ -3,7 +3,6 @@ const bcrypt = require('bcrypt');
 const validator = require('email-validator');
 const mailerConfig = require('../config/mailerConfig');
 require('dotenv').config();
-const mongoose = require('mongoose');
 
 
 const handleNewUser = async (req, res) => {
@@ -33,19 +32,6 @@ const handleNewUser = async (req, res) => {
         const hashedPwd = await bcrypt.hash(password, 10);
 
         const access = selectedBots.map(bot => bot.value);
-        
-        const result = await User.create({
-            matricule: matricule ,
-            email: email,
-            firstname: firstname,
-            lastname: lastname,
-            department: department,
-            password: hashedPwd,
-            role: role,
-            access: access,
-            refreshToken: '',
-            resetToken: ''
-        });
     
         const mailOptions = {
             from: process.env.MAIL,
@@ -58,15 +44,26 @@ const handleNewUser = async (req, res) => {
             Password: ${password}`
         };
         
-        mailerConfig.transporter.sendMail(mailOptions, (err, info) => {
+        mailerConfig.transporter.sendMail(mailOptions, async (err, info) => {
             if (err) {
-                console.log(err);
+                res.status(500).json({ 'message': err.message });
             } else {
-                console.log(info);
+                const result = await User.create({
+                    matricule: matricule ,
+                    email: email,
+                    firstname: firstname,
+                    lastname: lastname,
+                    department: department,
+                    password: hashedPwd,
+                    role: role,
+                    access: access,
+                    refreshToken: '',
+                    resetToken: ''
+                });
+                res.status(201).json({ 'success': `New user ${firstname} ${lastname} created!` });
             }
         });
 
-        res.status(201).json({ 'success': `New user ${firstname} ${lastname} created!` });
     } catch (err) {
         res.status(500).json({ 'message': err.message });
     }

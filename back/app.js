@@ -10,11 +10,28 @@ const credentials = require('./middleware/credentials');
 const mongoose = require('mongoose');
 const connectDB = require('./config/db');
 const PORT = process.env.PORT || 3500;
-var nodemailer = require('nodemailer');
+
+const rateLimit = require("express-rate-limit");
+const helmet = require("helmet");
+const mongoSanitize = require("express-mongo-sanitize");
 
 
 // Connect to MongoDB
 connectDB();
+
+// Apply rate limiting middleware
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10000, // limit each IP to 10000 requests per windowMs
+    message: "Too many requests, please try again later"
+});
+app.use(limiter);
+
+// Set HTTP headers for security with Helmet
+app.use(helmet());
+
+// Sanitize user-supplied data against NoSQL Injection
+app.use(mongoSanitize());
 
 
 // Handle options credentials check - before CORS!
@@ -26,7 +43,7 @@ app.use(cors(corsOptions));
 
 app.use(express.urlencoded({ extended: false }));
 
-app.use(express.json());
+app.use(express.json({ limit: "10kb" }));
 
 app.use(cookieParser());
 

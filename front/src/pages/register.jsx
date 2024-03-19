@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import useAxiosPrivate from "../hooks/useAxiosPrivate"; 
+import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import { useNavigate, useParams } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import { MultiSelect } from "react-multi-select-component";
 
 export default function RegisterPage() {
-  const {matricule} = useParams();
+  const { matricule } = useParams();
   const [newMatricule, setNewMatricule] = useState('');
   const [firstname, setFirstname] = useState('');
   const [lastname, setLastname] = useState('');
@@ -23,8 +23,8 @@ export default function RegisterPage() {
   const [selectedBots, setSelectedBots] = useState([]);
 
 
-  useEffect (() => {
-    if (!matricule) 
+  useEffect(() => {
+    if (!matricule)
       return;
 
     const fetchUser = async () => {
@@ -37,11 +37,13 @@ export default function RegisterPage() {
         setNewMatricule(data.matricule);
         setEmail(data.email);
         setRole(data.role);
-        setSelectedBots(data.access.map(bot => {
-          return {label : bot.name,
-                  value : bot._id};
-        }));
-          
+        /*         setSelectedBots(data.access.map(bot => {
+                  return {
+                    label: bot.name,
+                    value: bot._id
+                  };
+                })); */
+
         console.log("selectedBots", selectedBots);
       } catch (error) {
         console.error("Error fetching user", error);
@@ -67,7 +69,7 @@ export default function RegisterPage() {
 
     try {
       if (!validateEmail(email)) {
-       setErrMsg("Please enter a valid email address");
+        setErrMsg("Please enter a valid email address");
         return;
       }
 
@@ -95,7 +97,7 @@ export default function RegisterPage() {
         });
       }
       setSuccess(true);
-    }  catch (err) {
+    } catch (err) {
       console.error("Error registering user", err);
       const errorMessage = err.response?.data?.message || "An error occurred";
       setErrMsg(errorMessage);
@@ -115,7 +117,7 @@ export default function RegisterPage() {
     };
     fetchBots();
   }, []);
-  
+
   const options = allBots.map((bot) => ({
     label: bot.name,
     value: bot._id,
@@ -125,10 +127,6 @@ export default function RegisterPage() {
     setSelectedBots(selectedOptions);
   };
 
-  useEffect(() => {
-    console.log("selectedBots", selectedBots);
-  }, [selectedBots]);
-
   return (
     <div>
       {success ? (
@@ -136,14 +134,15 @@ export default function RegisterPage() {
       ) : (
         <div className="mt-4 grow flex items-center justify-around">
           <div className="mb-64">
-            <h1 className="text-4xl text-center mb-4">{matricule ?  <>Edit</> : <>Register</> }</h1>
+            <h1 className="text-4xl text-center mb-4">{matricule ? <>Edit</> : <>Register</>}</h1>
             <form className="max-w-md mx-auto" onSubmit={registerUser}>
-            <input
+              <input
                 required
                 type="text"
                 placeholder="matricule"
                 value={newMatricule}
                 onChange={(ev) => setNewMatricule(ev.target.value)}
+                maxLength={50}
               />
               <input
                 required
@@ -151,6 +150,7 @@ export default function RegisterPage() {
                 placeholder="firstname"
                 value={firstname}
                 onChange={(ev) => setFirstname(ev.target.value)}
+                maxLength={20}
               />
               <input
                 required
@@ -158,6 +158,7 @@ export default function RegisterPage() {
                 placeholder="lastname"
                 value={lastname}
                 onChange={(ev) => setLastname(ev.target.value)}
+                maxLength={20}
               />
               <input
                 required
@@ -165,6 +166,7 @@ export default function RegisterPage() {
                 placeholder="Email"
                 value={email}
                 onChange={(ev) => setEmail(ev.target.value)}
+                maxLength={254}
               />
               <input
                 required
@@ -172,6 +174,7 @@ export default function RegisterPage() {
                 placeholder="department"
                 value={department}
                 onChange={(ev) => setDepartment(ev.target.value)}
+                maxLength={50}
               />
               <select
                 value={role || "user"}
@@ -180,14 +183,12 @@ export default function RegisterPage() {
                 <option value="user">User</option>
                 <option value="admin">Admin</option>
               </select>
-              {(allBots.length > 0 && role=="user")&& (
-                <MultiSelect
+              <MultiSelect
                 options={options}
                 value={selectedBots}
                 onChange={handleChange}
                 labelledBy="Select"
               />
-              )}
               {matricule ? (
                 <button disabled={loading} className="primary">Update User</button>
               ) : (

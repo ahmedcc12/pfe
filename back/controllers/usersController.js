@@ -6,31 +6,37 @@ const getAllUsers = async (req, res) => {
     const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
     const search = req.query.search || '';
+    const searchOption = req.query.searchOption || 'all';
+
 
     try {
         let query = {};
         if (search !== '') {
+          if (searchOption === 'all') {
             query = {
-                $or: [
-                    { matricule: { $regex: search, $options: 'i' } },
-                    { email: { $regex: search, $options: 'i' } },
-                    { firstname: { $regex: search, $options: 'i' } },
-                    { lastname: { $regex: search, $options: 'i' } },
-                    { department: { $regex: search, $options: 'i' } },
-                    { role: { $regex: search, $options: 'i' } }
-                ]
+              $or: [
+                { matricule: { $regex: search, $options: 'i' } },
+                { email: { $regex: search, $options: 'i' } },
+                { firstname: { $regex: search, $options: 'i' } },
+                { lastname: { $regex: search, $options: 'i' } },
+                { department: { $regex: search, $options: 'i' } },
+                { role: { $regex: search, $options: 'i' } }
+              ]
             };
+          } else {
+            query[searchOption] = { $regex: search, $options: 'i' };
+          }
         }
 
         const users = await User.find(query)
             .skip(skip)
             .limit(limit);
         
-        const totalUsers = await User.countDocuments(query);
-
         if (!users || users.length === 0) {
             return res.status(204).json({ 'message': 'No users found' });
         }
+
+        const totalUsers = await User.countDocuments(query);
 
         res.json({
             users,
@@ -48,7 +54,7 @@ const deleteUser = async (req, res) => {
     if (!req?.params?.matricule) return res.status(400).json({ "message": 'User ID required' });
     const user = await User.findOne({ matricule: req.params.matricule }).exec();
     if (!user) {
-        return res.status(204).json({ 'message': `User ID ${req.params.matricule} not found` });
+        return res.status(404).json({ 'message': `User ID ${req.params.matricule} not found` });
     }
     const result = await user.deleteOne({ matricule: req.params.matricule });
     res.json(result);
@@ -135,11 +141,44 @@ const getUserBots = async (req, res) => {
     const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
     const search = req.query.search || '';
+    const searchOption = req.query.searchOption || 'all';
 
     try {
-        console.log("Query parameters:", req.query);
+        let matchQuery = { matricule: req.query.matricule };
+        let projectQuery = {};
+
+        if (searchOption !== 'all' && search !== '') {
+            projectQuery = {
+                access: {
+                    $filter: {
+                        input: "$access",
+                        as: "bot",
+                        cond: {
+                            $regexMatch: { input: "$$bot." + searchOption, regex: search, options: "i" }
+                        }
+                    }
+                }
+            };
+            
+        } else {
+            projectQuery = {
+                access: {
+                    $filter: {
+                        input: "$access",
+                        as: "bot",
+                        cond: {
+                            $or: [
+                                { $regexMatch: { input: "$$bot.name", regex: search, options: "i" } },
+                                { $regexMatch: { input: "$$bot.description", regex: search, options: "i" } }
+                            ]
+                        }
+                    }
+                }
+            };
+        }
+
         let userQuery = User.aggregate([
-            { $match: { matricule: req.query.matricule } },
+            { $match: matchQuery },
             {
                 $lookup: {
                     from: "bots",
@@ -149,37 +188,45 @@ const getUserBots = async (req, res) => {
                 }
             },
             {
-                $project: {
-                    access: {
-                        $filter: {
-                            input: "$access",
-                            as: "bot",
-                            cond: {
-                                $or: [
-                                    { $regexMatch: { input: "$$bot.name", regex: search, options: "i" } },
-                                    { $regexMatch: { input: "$$bot.description", regex: search, options: "i" } }
-                                ]
-                            }
-                        }
-                    }
-                }
+                $project: projectQuery
             },
             { $unwind: "$access" },
             { $replaceRoot: { newRoot: "$access" } },
             { $skip: skip },
             { $limit: limit }
         ]);
-        
-        
 
-        const user = await userQuery.exec();
+        const bots = await userQuery.exec();
 
-        if (!user || user.length === 0) {
-            return res.status(204).json({ 'message': `User ID ${req.query.matricule} not found` });
+        if (!bots || bots.length === 0) {
+            return res.status(204).json({ 'message': 'No bots found' });
         }
-        
-        res.json(user);
 
+        const totalBots = await User.aggregate([
+            { $match: matchQuery },
+            {
+                $lookup: {
+                    from: "bots",
+                    localField: "access",
+                    foreignField: "_id",
+                    as: "access"
+                }
+            },
+            {
+                $project: projectQuery
+            },
+            { $unwind: "$access" },
+            { $replaceRoot: { newRoot: "$access" }
+            }
+        ]).count('access').exec();
+
+        const totalCount = totalBots[0]?.access; 
+
+        res.json({
+            bots,
+            currentPage: page,
+            totalPages: Math.ceil(totalCount / limit)
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ 'message': 'Internal server error' });
