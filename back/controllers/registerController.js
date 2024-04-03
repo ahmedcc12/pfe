@@ -6,9 +6,9 @@ require('dotenv').config();
 
 
 const handleNewUser = async (req, res) => {
-    const { newMatricule, email, firstname, lastname, department, role, selectedBots } = req.body;
+    const { newMatricule, email, firstname, lastname, department, role, group } = req.body;
     const matricule = newMatricule;
-    if (!matricule || !email || !firstname || !lastname || !department  || !role) {
+    if (!matricule || !email || !firstname || !lastname || !department || !role || !group) {
         return res.status(400).json({ 'message': 'Missing required fields.' });
     }
 
@@ -20,19 +20,17 @@ const handleNewUser = async (req, res) => {
 
         const duplicateEmail = await User.findOne({ email: email }).exec();
         if (duplicateEmail) {
-            return res.status(409).json({'message': 'Email already in use'}); 
+            return res.status(409).json({ 'message': 'Email already in use' });
         }
         const dupliacteMatricule = await User.findOne({ matricule: matricule }).exec();
         if (dupliacteMatricule) {
-            return res.status(409).json({'message': 'Matricule already in use'});
+            return res.status(409).json({ 'message': 'Matricule already in use' });
         }
 
         const password = Math.random().toString(36).slice(-8);
 
         const hashedPwd = await bcrypt.hash(password, 10);
 
-        const access = selectedBots.map(bot => bot.value);
-    
         const mailOptions = {
             from: process.env.MAIL,
             to: email,
@@ -43,20 +41,20 @@ const handleNewUser = async (req, res) => {
             Email: ${email}
             Password: ${password}`
         };
-        
+
         mailerConfig.transporter.sendMail(mailOptions, async (err, info) => {
             if (err) {
                 res.status(500).json({ 'message': err.message });
             } else {
                 const result = await User.create({
-                    matricule: matricule ,
+                    matricule: matricule,
                     email: email,
                     firstname: firstname,
                     lastname: lastname,
                     department: department,
                     password: hashedPwd,
                     role: role,
-                    access: access,
+                    group: group,
                     refreshToken: '',
                     resetToken: ''
                 });

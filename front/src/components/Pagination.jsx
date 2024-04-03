@@ -2,8 +2,9 @@ import ReactPaginate from "react-paginate";
 import { BsChevronLeft, BsChevronRight } from "react-icons/bs";
 import { motion } from "framer-motion";
 
-const Pagination = ({ setCurrentPage, currentPage, totalPages }) => {
+const Pagination = ({ setCurrentPage, currentPage, totalPages, setNextPageisLoading }) => {
   const handlePageClick = ({ selected }) => {
+    setNextPageisLoading(true);
     setCurrentPage(selected);
   };
   const paginationVariants = {

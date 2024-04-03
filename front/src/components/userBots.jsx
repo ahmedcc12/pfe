@@ -1,35 +1,31 @@
-import { useState, useEffect, useCallback } from "react";
-import useAxiosPrivate from "../hooks/useAxiosPrivate";
-import { useNavigate } from "react-router-dom";
-import Pagination from "./Pagination";
-import Swal from "sweetalert2";
-import { Link } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-    faTrash,
-    faPencilAlt,
-    faDownload,
-} from "@fortawesome/free-solid-svg-icons";
 import useAuth from "../hooks/useAuth";
+import useAxiosPrivate from "../hooks/useAxiosPrivate";
+import { useState, useEffect, useCallback } from "react";
+import Pagination from "../components/Pagination";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPlay, faStop } from "@fortawesome/free-solid-svg-icons";
 import debounce from "lodash.debounce";
+import Swal from "sweetalert2";
 import { TailSpin } from "react-loader-spinner";
+import UploadFileModal from "../components/uploadFileModal";
 
-const Bots = () => {
-    const [bots, setBots] = useState();
-    const axiosPrivate = useAxiosPrivate();
-    const navigate = useNavigate();
-    const [totalPages, setTotalPages] = useState(1);
+
+const UserBots = () => {
     const [limit, setLimit] = useState(20);
     const [currentPage, setCurrentPage] = useState(0);
     const [search, setSearch] = useState("");
     const [searchOption, setSearchOption] = useState("all");
-    const [loading, setLoading] = useState(false);
+    const axiosPrivate = useAxiosPrivate();
+    const [bots, setBots] = useState();
+    const [totalPages, setTotalPages] = useState(1);
     const { auth } = useAuth();
+    const [loading, setLoading] = useState(false);
     const [nextPageisLoading, setNextPageisLoading] = useState(false);
-
+    const [selectedBot, setSelectedBot] = useState(null);
+    const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
-        localStorage.setItem("adminActiveComponent", "bots");
+        localStorage.setItem('ActiveComponent', 'userBots');
     }, []);
 
     const fetchBots = async (value) => {
@@ -37,18 +33,56 @@ const Bots = () => {
             if (!nextPageisLoading)
                 setLoading(true);
             const response = await axiosPrivate.get(
-                `/bots?page=${currentPage + 1
+                `/groups/${auth.group}/bots?page=${currentPage + 1
                 }&limit=${limit}&search=${value}&searchOption=${searchOption}`
             );
+
+            await Promise.all(response.data.bots.map(async (bot) => {
+                const response = await axiosPrivate.get(`/botinstances/status/${auth.userId}/${bot._id}`);
+                bot.status = response.data.status;
+            }
+            ));
+
+            /* //batch method
+            const batchSize = 10;
+            const botIds = response.data.bots.map(bot => bot._id);
+            const batches = [];
+            for (let i = 0; i < botIds.length; i += batchSize) {
+                batches.push(botIds.slice(i, i + batchSize));
+            }
+
+            // Fetch statuses for each batch of bot IDs
+            const statusPromises = batches.map(async batch => {
+                const batchResponse = await axiosPrivate.post('/botinstances/status', {
+                    userId: auth.userId,
+                    botIds: batch
+                });
+                return batchResponse.data;
+            });
+
+            // Wait for all status requests to complete
+            const batchStatuses = await Promise.all(statusPromises);
+
+            // Update bot statuses in the response data
+            const updatedBots = response.data.bots.map((bot, index) => ({
+                ...bot,
+                status: batchStatuses[Math.floor(index / batchSize)].status[bot._id]
+            })); */
+
             setBots(response.data.bots);
             setTotalPages(response.data.totalPages);
+            setCurrentPage(response.data.currentPage - 1);
+            setLoading(false);
         } catch (err) {
             console.error(err);
+            //navigate('/login', { state: { from: location }, replace: true });
         } finally {
             setNextPageisLoading(false);
             setLoading(false);
         }
     };
+
+
 
     const request = debounce(async (value) => {
         await fetchBots(value);
@@ -81,43 +115,64 @@ const Bots = () => {
         fetchData();
     }, [currentPage]);
 
-    const deleteBot = async (name) => {
-        const result = await Swal.fire({
-            title: "Are you sure?",
-            text: "You will not be able to recover this bot!",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "Yes, delete it!",
-            cancelButtonText: "No, keep it",
-        });
+    const handleStop = async (botId) => {
+        try {
+            Swal.fire({
+                title: "Warning",
+                text: "Are you sure you want to stop this bot?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Yes",
+                cancelButtonText: "No",
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: "Stopping bot...",
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                    });
+                    Swal.showLoading();
+                    const respone = await axiosPrivate.delete(`/botinstances/status/${auth.userId}/${botId}`);
+                    //update bot status 
+                    setBots(prevBots => prevBots.map(bot => {
+                        if (bot._id === botId) {
+                            return { ...bot, status: 'inactive' };
+                        } else {
+                            return bot;
+                        }
+                    }));
 
-        if (result.isConfirmed) {
-            try {
-                Swal.fire({
-                    title: "Deleting bot...",
-                    allowOutsideClick: false,
-                    allowEscapeKey: false,
-                });
-                Swal.showLoading();
-                await axiosPrivate.delete(`/bots/${name}`);
-                Swal.fire("Deleted!", "Bot has been deleted.", "success");
-                await fetchBots(search);
-            } catch (error) {
-                Swal.fire("Error!", "Failed to delete bot.", "error");
-            }
-        } else {
+                    if (respone.status === 200) {
+                        Swal.fire({
+                            title: "Bot stopped",
+                            icon: "success",
+                            confirmButtonText: "Ok",
+                        });
+                    }
+                }
+            });
+        } catch (error) {
+            Swal.fire({
+                title: "Error",
+                text: error.response.data.message,
+                icon: "error",
+                confirmButtonText: "Ok",
+            });
         }
     };
 
-    const editBot = (name) => {
-        navigate(`/admin/bot/edit/${name}`);
+    const openModal = (id) => {
+        setSelectedBot(id);
+        setShowModal(true);
+    };
+
+    const closeModal = () => {
+        setSelectedBot(null);
+        setShowModal(false);
     };
 
     return (
-        <article>
-            <h2>Bots List</h2>
-            <hr className="my-4" />
-
+        <div>
             <div className="p-4">
                 <label htmlFor="table-search" className="sr-only">
                     Search
@@ -162,12 +217,6 @@ const Bots = () => {
                             Search by
                         </label>
                     </div>
-                    <Link
-                        to="/admin/bot/add"
-                        className="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-6 border border-gray-400 rounded shadow ml-4"
-                    >
-                        add bot
-                    </Link>
                 </div>
             </div>
 
@@ -215,16 +264,8 @@ const Bots = () => {
                                                 scope="col"
                                                 className="text-sm font-bold text-gray-900 px-6 py-4 text-left"
                                             >
-                                                Configuration
+                                                Action
                                             </th>
-                                            {auth.role == "admin" ? (
-                                                <th
-                                                    scope="col"
-                                                    className="text-sm font-bold text-gray-900 px-6 py-4 text-left"
-                                                >
-                                                    Action
-                                                </th>
-                                            ) : null}
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -250,39 +291,18 @@ const Bots = () => {
                                                 </td>
 
                                                 <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">
-                                                    <a className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center"
-                                                        href={bot.configuration?.downloadURL}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        title="Download"
-                                                    >
-                                                        <FontAwesomeIcon className="fill-current w-4 h-4 mr-2" icon={faDownload} />
-                                                        <span>Download</span>
-                                                    </a>
-                                                </td>
-
-                                                {
-                                                    auth.role == "user" ? null : (
-                                                        <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">
-                                                            <button
-                                                                type="button"
-                                                                title="Delete"
-                                                                className="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900"
-                                                                onClick={() => deleteBot(bot.name)}
-                                                            >
-                                                                <FontAwesomeIcon icon={faTrash} />
-                                                            </button>
-                                                            <button
-                                                                type="button"
-                                                                title="Edit"
-                                                                className="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                                                                onClick={() => editBot(bot.name)}
-                                                            >
-                                                                <FontAwesomeIcon icon={faPencilAlt} />
-                                                            </button>
-                                                        </td>
+                                                    {bot.status === "inactive" ? (
+                                                        <button onClick={() => openModal(bot._id)} className="bg-green-500  me-2 mb-2 px-5 py-2.5 hover:bg-green-600 text-white font-bold py-2 px-4 rounded" title="Start"
+                                                        >
+                                                            <FontAwesomeIcon icon={faPlay} />
+                                                        </button>
+                                                    ) : (
+                                                        <button onClick={() => handleStop(bot._id)} className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded me-2 mb-2 px-5 py-2.5" title="Stop" >
+                                                            <FontAwesomeIcon icon={faStop} />
+                                                        </button>
                                                     )
-                                                }
+                                                    }
+                                                </td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -292,17 +312,23 @@ const Bots = () => {
                                 totalPages={totalPages}
                                 currentPage={currentPage}
                                 setCurrentPage={setCurrentPage}
-                                setNextPageisLoading={setNextPageisLoading}
                             />
                         </>
                     ) : (
                         <p>No bots to display</p>
                     )}
                 </>
-            )
+            )}
+            {showModal &&
+                <UploadFileModal
+                    isOpen={showModal}
+                    onClose={closeModal}
+                    selectedBot={selectedBot}
+                    setBots={setBots}
+                />
             }
-        </article >
+        </div>
     );
-};
+}
 
-export default Bots;
+export default UserBots;

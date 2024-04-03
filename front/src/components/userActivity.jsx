@@ -1,46 +1,37 @@
-import { useState, useEffect, useCallback } from "react";
-import useAxiosPrivate from "../hooks/useAxiosPrivate";
-import { useNavigate } from "react-router-dom";
-import Pagination from "./Pagination";
-import Swal from "sweetalert2";
-import { Link } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-    faTrash,
-    faPencilAlt,
-    faDownload,
-} from "@fortawesome/free-solid-svg-icons";
-import useAuth from "../hooks/useAuth";
-import debounce from "lodash.debounce";
+import { useEffect, useState, useCallback } from 'react';
+import useAuth from '../hooks/useAuth';
+import useAxiosPrivate from '../hooks/useAxiosPrivate';
+import Swal from 'sweetalert2';
 import { TailSpin } from "react-loader-spinner";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye } from "@fortawesome/free-solid-svg-icons";
+import Pagination from "../components/Pagination";
+import debounce from "lodash.debounce";
 
-const Bots = () => {
-    const [bots, setBots] = useState();
+const UserActivity = () => {
+    const { auth } = useAuth();
     const axiosPrivate = useAxiosPrivate();
-    const navigate = useNavigate();
-    const [totalPages, setTotalPages] = useState(1);
+    const [activity, setActivity] = useState([]);
+    const [loading, setLoading] = useState(false);
     const [limit, setLimit] = useState(20);
     const [currentPage, setCurrentPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(1);
+    const [nextPageisLoading, setNextPageisLoading] = useState(false);
     const [search, setSearch] = useState("");
     const [searchOption, setSearchOption] = useState("all");
-    const [loading, setLoading] = useState(false);
-    const { auth } = useAuth();
-    const [nextPageisLoading, setNextPageisLoading] = useState(false);
-
 
     useEffect(() => {
-        localStorage.setItem("adminActiveComponent", "bots");
+        localStorage.setItem('userActiveComponent', 'userActivity');
     }, []);
 
-    const fetchBots = async (value) => {
+
+    const fetchActivity = async (value) => {
         try {
             if (!nextPageisLoading)
                 setLoading(true);
-            const response = await axiosPrivate.get(
-                `/bots?page=${currentPage + 1
-                }&limit=${limit}&search=${value}&searchOption=${searchOption}`
-            );
-            setBots(response.data.bots);
+            const response = await axiosPrivate.get(`/botinstances/user/${auth.userId}?page=${currentPage + 1
+                }&limit=${limit}&search=${value}&searchOption=${searchOption}`);
+            setActivity(response.data.botInstances);
             setTotalPages(response.data.totalPages);
         } catch (err) {
             console.error(err);
@@ -50,8 +41,9 @@ const Bots = () => {
         }
     };
 
+
     const request = debounce(async (value) => {
-        await fetchBots(value);
+        await fetchActivity(value);
     }, 500);
 
     const onChangeSearch = (e) => {
@@ -67,7 +59,7 @@ const Bots = () => {
         if (search !== "") {
             setCurrentPage(0);
             const fetchData = async () => {
-                await fetchBots(search);
+                await fetchActivity(search);
             };
 
             fetchData();
@@ -76,49 +68,17 @@ const Bots = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            await fetchBots(search);
+            await fetchActivity(search);
         };
         fetchData();
     }, [currentPage]);
 
-    const deleteBot = async (name) => {
-        const result = await Swal.fire({
-            title: "Are you sure?",
-            text: "You will not be able to recover this bot!",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "Yes, delete it!",
-            cancelButtonText: "No, keep it",
-        });
-
-        if (result.isConfirmed) {
-            try {
-                Swal.fire({
-                    title: "Deleting bot...",
-                    allowOutsideClick: false,
-                    allowEscapeKey: false,
-                });
-                Swal.showLoading();
-                await axiosPrivate.delete(`/bots/${name}`);
-                Swal.fire("Deleted!", "Bot has been deleted.", "success");
-                await fetchBots(search);
-            } catch (error) {
-                Swal.fire("Error!", "Failed to delete bot.", "error");
-            }
-        } else {
-        }
-    };
-
-    const editBot = (name) => {
-        navigate(`/admin/bot/edit/${name}`);
-    };
 
     return (
-        <article>
-            <h2>Bots List</h2>
+        <div className="mt-8">
+            <h2 className="text-xl">Activity</h2>
             <hr className="my-4" />
-
-            <div className="p-4">
+            <div>
                 <label htmlFor="table-search" className="sr-only">
                     Search
                 </label>
@@ -162,12 +122,6 @@ const Bots = () => {
                             Search by
                         </label>
                     </div>
-                    <Link
-                        to="/admin/bot/add"
-                        className="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-6 border border-gray-400 rounded shadow ml-4"
-                    >
-                        add bot
-                    </Link>
                 </div>
             </div>
 
@@ -177,7 +131,7 @@ const Bots = () => {
                 </div>
             ) : (
                 <>
-                    {bots?.length ? (
+                    {activity?.length ? (
                         <>
                             {nextPageisLoading ? (
                                 <div className="flex justify-center items-center h-40">
@@ -197,13 +151,7 @@ const Bots = () => {
                                                 scope="col"
                                                 className="text-sm font-bold text-gray-900 px-6 py-4 text-left"
                                             >
-                                                Name
-                                            </th>
-                                            <th
-                                                scope="col"
-                                                className="text-sm font-bold text-gray-900 px-6 py-4 text-left"
-                                            >
-                                                Description
+                                                Bot name
                                             </th>
                                             <th
                                                 scope="col"
@@ -215,20 +163,12 @@ const Bots = () => {
                                                 scope="col"
                                                 className="text-sm font-bold text-gray-900 px-6 py-4 text-left"
                                             >
-                                                Configuration
+                                                Config
                                             </th>
-                                            {auth.role == "admin" ? (
-                                                <th
-                                                    scope="col"
-                                                    className="text-sm font-bold text-gray-900 px-6 py-4 text-left"
-                                                >
-                                                    Action
-                                                </th>
-                                            ) : null}
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {bots.map((bot, index) => (
+                                        {activity.map((instance, index) => (
                                             <tr
                                                 key={index}
                                                 className={index % 2 === 0 ? "bg-gray-100" : ""}
@@ -236,53 +176,22 @@ const Bots = () => {
                                                 <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">
                                                     {currentPage * limit + index + 1}
                                                 </td>
-
                                                 <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">
-                                                    {bot.name}
+                                                    {instance.bot.name}
                                                 </td>
-
                                                 <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">
-                                                    {bot.description}
+                                                    {instance.status}
                                                 </td>
-
                                                 <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">
-                                                    {bot.status}
-                                                </td>
-
-                                                <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">
-                                                    <a className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center"
-                                                        href={bot.configuration?.downloadURL}
+                                                    <a
+                                                        href={instance.configuration.downloadURL}
                                                         target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        title="Download"
+                                                        rel="noreferrer"
+                                                        className="text-blue-500"
                                                     >
-                                                        <FontAwesomeIcon className="fill-current w-4 h-4 mr-2" icon={faDownload} />
-                                                        <span>Download</span>
+                                                        View config <FontAwesomeIcon icon={faEye} />
                                                     </a>
                                                 </td>
-
-                                                {
-                                                    auth.role == "user" ? null : (
-                                                        <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">
-                                                            <button
-                                                                type="button"
-                                                                title="Delete"
-                                                                className="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900"
-                                                                onClick={() => deleteBot(bot.name)}
-                                                            >
-                                                                <FontAwesomeIcon icon={faTrash} />
-                                                            </button>
-                                                            <button
-                                                                type="button"
-                                                                title="Edit"
-                                                                className="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                                                                onClick={() => editBot(bot.name)}
-                                                            >
-                                                                <FontAwesomeIcon icon={faPencilAlt} />
-                                                            </button>
-                                                        </td>
-                                                    )
-                                                }
                                             </tr>
                                         ))}
                                     </tbody>
@@ -292,17 +201,15 @@ const Bots = () => {
                                 totalPages={totalPages}
                                 currentPage={currentPage}
                                 setCurrentPage={setCurrentPage}
-                                setNextPageisLoading={setNextPageisLoading}
                             />
                         </>
                     ) : (
-                        <p>No bots to display</p>
+                        <p>No Activity to display</p>
                     )}
                 </>
-            )
-            }
-        </article >
+            )}
+        </div>
     );
 };
 
-export default Bots;
+export default UserActivity;

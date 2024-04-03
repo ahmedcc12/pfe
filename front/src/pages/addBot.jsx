@@ -4,6 +4,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDownload } from '@fortawesome/free-solid-svg-icons';
+import { TailSpin } from 'react-loader-spinner';
+import Swal from 'sweetalert2';
 export default function AddBot() {
   const { name } = useParams();
   const [newName, setNewname] = useState('');
@@ -39,7 +41,6 @@ export default function AddBot() {
 
   async function addBot(ev) {
     ev.preventDefault();
-    setLoading(true);
 
     const formData = new FormData();
     formData.append('newName', newName);
@@ -48,21 +49,42 @@ export default function AddBot() {
 
     try {
       if (name) {
+        Swal.fire({
+          title: "Updating bot...",
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+        });
+        Swal.showLoading();
         await axiosPrivate.put(`/bots/${name}`, formData,
           { headers: { 'Content-Type': 'multipart/form-data' } }
         );
+        Swal.fire({
+          title: "Bot updated",
+          icon: "success",
+          confirmButtonText: "Ok",
+        });
       } else {
+        Swal.fire({
+          title: "Adding bot...",
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+        });
+        Swal.showLoading();
+
         await axiosPrivate.post("/bots", formData,
           { headers: { 'Content-Type': 'multipart/form-data' } }
         );
+        Swal.fire({
+          title: "Bot added",
+          icon: "success",
+          confirmButtonText: "Ok",
+        });
       }
       setSuccess(true);
     } catch (err) {
       console.error("Error registering bot", err);
       const errorMessage = err.response?.data?.message || "An error occurred";
       setErrMsg(errorMessage);
-    } finally {
-      setLoading(false);
     }
   }
 
@@ -105,6 +127,13 @@ export default function AddBot() {
               ) : (
                 <button disabled={loading} className="primary">add bot</button>
               )}
+
+              {loading && (
+                <div className="fixed top-0 left-0 z-50 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+                  <TailSpin color="#3B82F6" height={50} width={50} />
+                </div>
+              )}
+
               {errMsg && <div className="error">{errMsg}</div>}
             </form>
           </div>

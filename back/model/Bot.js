@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
+const mongoosePaginate = require('mongoose-paginate-v2');
 const Schema = mongoose.Schema;
+
 
 const botSchema = new Schema({
 
@@ -22,11 +24,7 @@ const botSchema = new Schema({
             required: true,
         }
     },
-    status: {
-        type: String,
-        enum: ['active', 'inactive']
-    },
-    logs: [{
+    /*logs: [{
         timestamp: {
             type: Date,
             default: Date.now
@@ -43,7 +41,9 @@ const botSchema = new Schema({
     isScheduled: {
         type: Boolean,
         default: false
-    }
+    }*/
 });
+
+botSchema.plugin(mongoosePaginate);
 
 module.exports = mongoose.model('Bot', botSchema);

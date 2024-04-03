@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import { useNavigate, useParams } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
-import { MultiSelect } from "react-multi-select-component";
+import Select from 'react-select';
+import { TailSpin } from 'react-loader-spinner';
+import Swal from 'sweetalert2';
 
 export default function RegisterPage() {
   const { matricule } = useParams();
@@ -13,14 +15,15 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('user');
   const axiosPrivate = useAxiosPrivate();
+  const [group, setGroup] = useState('');
+  const [allGroups, setAllGroups] = useState([]);
   const { auth } = useAuth();
   const userrole = auth.role;
   const [errMsg, setErrMsg] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const Navigate = useNavigate();
-  const [allBots, setAllBots] = useState([]);
-  const [selectedBots, setSelectedBots] = useState([]);
+
 
 
   useEffect(() => {
@@ -37,14 +40,11 @@ export default function RegisterPage() {
         setNewMatricule(data.matricule);
         setEmail(data.email);
         setRole(data.role);
-        /*         setSelectedBots(data.access.map(bot => {
-                  return {
-                    label: bot.name,
-                    value: bot._id
-                  };
-                })); */
+        setGroup({
+          label: data.group.name,
+          value: data.group._id
+        });
 
-        console.log("selectedBots", selectedBots);
       } catch (error) {
         console.error("Error fetching user", error);
         //redirect user to /missing route
@@ -65,7 +65,6 @@ export default function RegisterPage() {
 
   async function registerUser(ev) {
     ev.preventDefault();
-    setLoading(true);
 
     try {
       if (!validateEmail(email)) {
@@ -74,6 +73,12 @@ export default function RegisterPage() {
       }
 
       if (matricule) {
+        Swal.fire({
+          title: "Updating user...",
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+        });
+        Swal.showLoading();
         await axiosPrivate.put(`/users/${matricule}`, {
           newMatricule,
           email,
@@ -81,10 +86,21 @@ export default function RegisterPage() {
           lastname,
           department,
           role,
-          selectedBots,
-          userrole
+          userrole,
+          group: group.value
+        });
+        Swal.fire({
+          title: "User updated",
+          icon: "success",
+          confirmButtonText: "Ok",
         });
       } else {
+        Swal.fire({
+          title: "Registering user...",
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+        });
+        Swal.showLoading();
         await axiosPrivate.post("/register", {
           newMatricule,
           email,
@@ -92,8 +108,13 @@ export default function RegisterPage() {
           lastname,
           department,
           role,
-          selectedBots,
-          userrole
+          userrole,
+          group: group.value
+        });
+        Swal.fire({
+          title: "User registered",
+          icon: "success",
+          confirmButtonText: "Ok",
         });
       }
       setSuccess(true);
@@ -101,31 +122,28 @@ export default function RegisterPage() {
       console.error("Error registering user", err);
       const errorMessage = err.response?.data?.message || "An error occurred";
       setErrMsg(errorMessage);
-    } finally {
-      setLoading(false);
     }
   }
 
   useEffect(() => {
-    const fetchBots = async () => {
+    const fetchGroups = async () => {
       try {
-        const { data } = await axiosPrivate.get("/bots");
-        setAllBots(data.bots);
+        const { data } = await axiosPrivate.get("/groups");
+        console.log("data", data);
+        setAllGroups(data.groups);
       } catch (error) {
-        console.error("Error fetching bots", error);
+        console.error("Error fetching groups", error);
       }
-    };
-    fetchBots();
+    }
+    fetchGroups();
   }, []);
 
-  const options = allBots.map((bot) => ({
-    label: bot.name,
-    value: bot._id,
-  }));
-
-  const handleChange = (selectedOptions) => {
-    setSelectedBots(selectedOptions);
-  };
+  const groupOptions = allGroups.map(group => {
+    return {
+      label: group.name,
+      value: group._id
+    };
+  });
 
   return (
     <div>
@@ -183,16 +201,26 @@ export default function RegisterPage() {
                 <option value="user">User</option>
                 <option value="admin">Admin</option>
               </select>
-              <MultiSelect
-                options={options}
-                value={selectedBots}
-                onChange={handleChange}
-                labelledBy="Select"
+
+              <Select
+                options={groupOptions}
+                value={group}
+                onChange={(selectedOption) => setGroup(selectedOption)}
+                placeholder="Select group"
+                required
               />
+
+
               {matricule ? (
                 <button disabled={loading} className="primary">Update User</button>
               ) : (
                 <button disabled={loading} className="primary">Sign Up</button>
+              )}
+
+              {loading && (
+                <div className="fixed top-0 left-0 z-50 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+                  <TailSpin color="#3B82F6" height={50} width={50} />
+                </div>
               )}
 
 

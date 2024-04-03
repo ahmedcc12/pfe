@@ -4,6 +4,7 @@ import useAuth from "../hooks/useAuth";
 import axios from "../api/axios";
 import { Link } from "react-router-dom";
 import ReCAPATCHA from "react-google-recaptcha";
+import { TailSpin } from 'react-loader-spinner';
 
 
 export default function LoginPage() {
@@ -25,7 +26,7 @@ export default function LoginPage() {
 
   async function handleLoginSubmit(ev) {
     ev.preventDefault();
-
+    setLoading(true);
     try {
       const response = await axios.post("/auth",
         JSON.stringify({ email, pwd }),
@@ -37,10 +38,11 @@ export default function LoginPage() {
       if (response.status === 200) {
         const accessToken = response?.data?.accessToken;
         const role = response?.data?.role;
-        const access = response?.data?.access;
         const matricule = response?.data?.matricule;
+        const group = response?.data?.group;
+        const userId = response?.data?.userId;
 
-        setAuth({ matricule, accessToken, role, access });
+        setAuth({ matricule, accessToken, role, group, userId });
         console.log('auth', auth);
 
       }
@@ -113,6 +115,12 @@ export default function LoginPage() {
 
               <button disabled={loading || !captcha} className="primary">Login</button>
               {error && <div className="text-red-500">{error}</div>}
+
+              {loading && (
+                <div className="fixed top-0 left-0 z-50 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+                  <TailSpin color="#3B82F6" height={50} width={50} />
+                </div>
+              )}
 
               {/*  <div className="text-center py-2 text-gray-500">
                 Don't have an account yet?{" "}

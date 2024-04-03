@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
 import debounce from 'lodash.debounce';
 import useAuth from "../hooks/useAuth";
+import { TailSpin } from "react-loader-spinner";
 
 const Users = () => {
     const [users, setUsers] = useState();
@@ -22,26 +23,31 @@ const Users = () => {
     const [searchOption, setSearchOption] = useState('all');
     const [loading, setLoading] = useState(false);
     const { auth } = useAuth();
+    const [nextPageisLoading, setNextPageisLoading] = useState(false);
 
     useEffect(() => {
-        localStorage.setItem('activeComponent', 'users');
+        localStorage.setItem('adminActiveComponent', 'users');
     }, []);
 
     const fetchUsers = async (value) => {
         try {
-            setLoading(true);
+            if (!nextPageisLoading)
+                setLoading(true);
             const response = await axiosPrivate.get(`/users?page=${currentPage + 1}&limit=${limit}&search=${value}&searchOption=${searchOption}`);
             setUsers(response.data.users);
             setTotalPages(response.data.totalPages);
-            setLoading(false);
-
         } catch (err) {
             console.error(err);
             //navigate('/login', { state: { from: location }, replace: true });
+        } finally {
+            setNextPageisLoading(false);
+            setLoading(false);
         }
+
     };
 
     const request = debounce(async (value) => {
+        console.log('search', value, 'searchOption', searchOption);
         await fetchUsers(value);
     }, 500);
 
@@ -52,14 +58,13 @@ const Users = () => {
         setCurrentPage(0);
     };
 
-    const debounceRequest = useCallback((search) => request(search), []);
+    const debounceRequest = useCallback((search) => request(search), [searchOption]);
 
     useEffect(() => {
         if (search !== '') {
             setCurrentPage(0);
             const fetchData = async () => {
                 await fetchUsers(search);
-                setLoading(false);
             };
 
             fetchData();
@@ -71,7 +76,6 @@ const Users = () => {
             await fetchUsers(search);
         };
         fetchData();
-        setLoading(false);
     }, [currentPage]);
 
     const deleteUser = async (matricule) => {
@@ -86,13 +90,19 @@ const Users = () => {
 
         if (result.isConfirmed) {
             try {
+                Swal.fire({
+                    title: "Deleting user...",
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                });
+                Swal.showLoading();
                 await axiosPrivate.delete(`/users/${matricule}`);
-                fetchUsers();
                 Swal.fire(
                     'Deleted!',
                     'User has been deleted.',
                     'success'
                 );
+                await fetchUsers(search);
             } catch (error) {
                 Swal.fire(
                     'Error!',
@@ -113,6 +123,7 @@ const Users = () => {
     return (
         <article>
             <h2>Users List</h2>
+            <hr className="my-4" />
 
             <div className="p-4">
                 <label htmlFor="table-search" className="sr-only">Search</label>
@@ -158,84 +169,97 @@ const Users = () => {
             </div>
 
             {loading ? (
-                <p>Loading...</p>
+                <div className="flex justify-center items-center h-40">
+                    <TailSpin color="#3B82F6" height={50} width={50} />
+                </div>
             ) : (
                 <>
+
                     {users?.length ? (
                         <>
-                            <table className="min-w-full">
-                                <thead className="bg-white border-b">
-                                    <tr>
-                                        <th scope="col" className="text-sm font-bold text-gray-900 px-6 py-4 text-left">#</th>
-                                        <th scope="col" className="text-sm font-bold text-gray-900 px-6 py-4 text-left">Matricule</th>
-                                        <th scope="col" className="text-sm font-bold text-gray-900 px-6 py-4 text-left">Email</th>
-                                        <th scope="col" className="text-sm font-bold text-gray-900 px-6 py-4 text-left">Firstname</th>
-                                        <th scope="col" className="text-sm font-bold text-gray-900 px-6 py-4 text-left">Lastname</th>
-                                        <th scope="col" className="text-sm font-bold text-gray-900 px-6 py-4 text-left">Department</th>
-                                        <th scope="col" className="text-sm font-bold text-gray-900 px-6 py-4 text-left">Role</th>
-                                        <th scope="col" className="text-sm font-bold text-gray-900 px-6 py-4 text-left">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {users.map((user, index) => (
-                                        <tr key={index} className={index % 2 === 0 ? "bg-gray-100" : ""}>
-                                            <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">{currentPage * limit + index + 1}</td>
-
-                                            <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">{user.matricule}</td>
-
-                                            <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">{user.email}</td>
-
-                                            <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">{user.firstname}</td>
-
-                                            <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">{user.lastname}</td>
-
-                                            <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">{user.department}</td>
-
-                                            <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">{user.role}</td>
-
-                                            <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">
-                                                {user.role === 'admin' ? <td></td> :
-                                                    <button
-                                                        title="Delete"
-                                                        type="button"
-                                                        className="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900"
-                                                        onClick={() => deleteUser(user.matricule)}
-                                                    >
-                                                        <FontAwesomeIcon icon={faTrash} />
-                                                    </button>
-                                                }
-                                                {((user.matricule === auth.matricule) || (user.role !== "admin")) ?
-                                                    <>
-                                                        <button
-                                                            title="edit"
-                                                            type="button"
-                                                            className="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                                                            onClick={() => editUser(user.matricule)}
-                                                        >
-                                                            <FontAwesomeIcon icon={faPencilAlt} />
-                                                        </button>
-                                                    </>
-                                                    :
-                                                    <td></td>
-                                                }
-                                            </td>
-
+                            {nextPageisLoading ? (
+                                <div className="flex justify-center items-center h-40">
+                                    <TailSpin color="#3B82F6" height={50} width={50} />
+                                </div>
+                            ) : (
+                                <table className="min-w-full">
+                                    <thead className="bg-white border-b">
+                                        <tr>
+                                            <th scope="col" className="text-sm font-bold text-gray-900 px-6 py-4 text-left">#</th>
+                                            <th scope="col" className="text-sm font-bold text-gray-900 px-6 py-4 text-left">Matricule</th>
+                                            <th scope="col" className="text-sm font-bold text-gray-900 px-6 py-4 text-left">Email</th>
+                                            <th scope="col" className="text-sm font-bold text-gray-900 px-6 py-4 text-left">Firstname</th>
+                                            <th scope="col" className="text-sm font-bold text-gray-900 px-6 py-4 text-left">Lastname</th>
+                                            <th scope="col" className="text-sm font-bold text-gray-900 px-6 py-4 text-left">Department</th>
+                                            <th scope="col" className="text-sm font-bold text-gray-900 px-6 py-4 text-left">Role</th>
+                                            <th scope="col" className="text-sm font-bold text-gray-900 px-6 py-4 text-left">Group</th>
+                                            <th scope="col" className="text-sm font-bold text-gray-900 px-6 py-4 text-left">Action</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                            <div>
-                                <Pagination
-                                    totalPages={totalPages}
-                                    currentPage={currentPage}
-                                    setCurrentPage={setCurrentPage} />
-                            </div>
+                                    </thead>
+                                    <tbody>
+                                        {users.map((user, index) => (
+                                            <tr key={index} className={index % 2 === 0 ? "bg-gray-100" : ""}>
+                                                <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">{currentPage * limit + index + 1}</td>
+
+                                                <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">{user.matricule}</td>
+
+                                                <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">{user.email}</td>
+
+                                                <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">{user.firstname}</td>
+
+                                                <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">{user.lastname}</td>
+
+                                                <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">{user.department}</td>
+
+                                                <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">{user.role}</td>
+
+                                                <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">{user.group.name}</td>
+
+                                                <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+                                                    {user.role === 'admin' ? <td></td> :
+                                                        <button
+                                                            title="Delete"
+                                                            type="button"
+                                                            className="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900"
+                                                            onClick={() => deleteUser(user.matricule)}
+                                                        >
+                                                            <FontAwesomeIcon icon={faTrash} />
+                                                        </button>
+                                                    }
+                                                    {((user.matricule === auth.matricule) || (user.role !== "admin")) ?
+                                                        <>
+                                                            <button
+                                                                title="edit"
+                                                                type="button"
+                                                                className="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                                                                onClick={() => editUser(user.matricule)}
+                                                            >
+                                                                <FontAwesomeIcon icon={faPencilAlt} />
+                                                            </button>
+                                                        </>
+                                                        :
+                                                        <td></td>
+                                                    }
+                                                </td>
+
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
+                            <Pagination
+                                totalPages={totalPages}
+                                currentPage={currentPage}
+                                setCurrentPage={setCurrentPage}
+                                setNextPageisLoading={setNextPageisLoading}
+                            />
                         </>
                     ) : (
                         <p>No users to display</p>
                     )}
                 </>
             )}
+
         </article>
     );
 };

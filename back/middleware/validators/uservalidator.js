@@ -16,7 +16,7 @@ const UserValidationRules = () => {
         check('lastname').trim().escape().notEmpty().withMessage('Lastname is required').isLength({ min: 3, max: 20 }).withMessage('Lastname must be 3 to 20 characters long'),
         check('department').trim().escape().notEmpty().withMessage('Department is required').isLength({ min: 2, max: 50 }).withMessage('Department must be 2 to 20 characters long'),
         check('role').trim().escape().notEmpty().withMessage('Role is required'),
-        check('selectedBots').isArray({ min: 1 }).withMessage('At least one bot must be selected'),
+        //check('selectedBots').isArray({ min: 1 }).withMessage('At least one bot must be selected'),
     ];
 };
 

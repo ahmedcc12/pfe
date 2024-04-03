@@ -4,59 +4,27 @@ import Swal from "sweetalert2";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import axios from "../api/axios";
 
-export default function ProfileModal({ onClose }) {
-  const { auth } = useAuth();
-  const axiosPrivate = useAxiosPrivate();
+export default function ProfileModal({ onClose, user, isOpen }) {
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const { data: user } = await axiosPrivate.get(`/users/${auth.matricule}`);
-        Swal.fire({
-          title: "User Details",
-          html: `
-            <div class="swal-flex-container">
-            <p><strong>Matricule:</strong><span>${user.matricule}</span></p>
-            <p><strong>First Name:</strong><span>${user.firstname}</span></p>
-            <p><strong>Last Name:</strong><span>${user.lastname}</span></p>
-            <p><strong>Email:</strong><span>${user.email}</span></p>
-            <p><strong>Department:</strong><span>${user.department}</span></p>        
-            </div>
-            <button id="resetPasswordBtn" class="swal2-confirm swal2-styled mt-4">Reset Password</button>
-          `,
-          customClass: {
-            container: "swal-flex-container",
-          },
-          didOpen: () => {
-            const resetPasswordBtn = document.getElementById("resetPasswordBtn");
-            resetPasswordBtn.addEventListener("click", () => {
-              Swal.fire({
-                title: "Reset Password",
-                text: "Are you sure you want to reset the password?",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#3085d6",
-                cancelButtonColor: "#d33",
-                confirmButtonText: "Yes, reset it!",
-              }).then((result) => {
-                if (result.isConfirmed) {
-                  sendResetPasswordEmail(user.email);
-                }
-              });
-            });
-          },
-        });
-      } catch (err) {
-        console.error("error ", err);
-      }
-    };
+    console.log("PROFILE");
 
-    fetchData();
-  }, [auth.matricule, axiosPrivate]);
+  }, []);
+  if (!user) {
+    return null;
+  }
+
 
 
   const sendResetPasswordEmail = async (email) => {
     try {
+      Swal.fire({
+        title: "Sending email...",
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+      });
+      Swal.showLoading();
+
       await axios.post('/auth/forgotpassword', { email });
       Swal.fire({
         title: "Email sent",
@@ -75,15 +43,65 @@ export default function ProfileModal({ onClose }) {
     }
   }
 
-  useEffect(() => {
-    return () => {
-      onClose();
-    };
-  }, [onClose]);
-
-
   return (
-    <>
-    </>
+    <div
+      className={`fixed inset-0 z-50 flex items-center justify-center overflow-x-hidden overflow-y-auto outline-none focus:outline-none bg-black bg-opacity-70 ${isOpen ? "" : "hidden"
+        }`}
+    >
+      <div class="bg-white overflow-hidden shadow rounded-lg border">
+        <div class="px-4 py-5 sm:px-6">
+          <h3 class="text-lg leading-6 font-medium text-gray-900">
+            User Profile
+          </h3>
+
+        </div>
+        <div class="border-t border-gray-200 px-4 py-5 sm:p-0">
+          <dl class="sm:divide-y sm:divide-gray-200">
+
+            <div class="sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 sm:py-5">
+              <dt class="text-sm font-medium text-gray-500">Matricule</dt>
+              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2">{user?.matricule}</dd>
+            </div>
+            <div class="sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 sm:py-5">
+              <dt class="text-sm font-medium text-gray-500">First Name</dt>
+              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2">{user?.firstname}</dd>
+            </div>
+            <div class="sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 sm:py-5">
+              <dt class="text-sm font-medium text-gray-500">Last Name</dt>
+              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2">{user?.lastname}</dd>
+            </div>
+            <div class="sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 sm:py-5">
+              <dt class="text-sm font-medium text-gray-500">Email</dt>
+              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2">{user?.email}</dd>
+            </div>
+            <div class="sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 sm:py-5">
+              <dt class="text-sm font-medium text-gray-500">Department</dt>
+              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2">{user?.department}</dd>
+            </div>
+
+            <div class="sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 sm:py-5">
+              <dt class="text-sm font-medium text-gray-500">Group</dt>
+              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2">{user?.group?.name}</dd>
+            </div>
+            <div class="sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 sm:py-5">
+              <dt class="">     <button
+                onClick={onClose}
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Close
+              </button></dt>
+              <dd class="sm:col-span-2"><button
+                onClick={() => sendResetPasswordEmail(user.email)}
+                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Reset Password
+              </button></dd>
+            </div>
+
+          </dl>
+        </div>
+      </div>
+
+    </div>
   );
 }

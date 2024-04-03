@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const mongoosePaginate = require('mongoose-paginate-v2');
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
@@ -8,38 +9,42 @@ const userSchema = new Schema({
         required: true,
         unique: true
     },
-    email:{ 
-        type : String,
+    email: {
+        type: String,
         required: true,
         unique: true
     },
-    firstname:{ 
-        type : String,
+    firstname: {
+        type: String,
         required: true,
     },
-    lastname:{
-        type : String,
+    lastname: {
+        type: String,
         required: true,
     },
-    department:{
-        type : String,
+    department: {
+        type: String,
         required: true,
     },
-    password:{ 
-        type : String,
+    password: {
+        type: String,
         required: true,
-        },
+    },
     role: {
         type: String,
         required: true,
         enum: ['admin', 'user']
     },
-    access: [{
+
+    group: {
         type: Schema.Types.ObjectId,
-        ref: 'Bot'
-    }],
+        ref: 'Group'
+    },
+
     refreshToken: String,
     resetToken: String
 });
+
+userSchema.plugin(mongoosePaginate);
 
 module.exports = mongoose.model('User', userSchema);

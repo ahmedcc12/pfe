@@ -1,11 +1,10 @@
 const Bot = require('../model/Bot');
 const { uploadFile, deleteFile } = require('../middleware/file');
-const scheduler = require('node-schedule');
+const Group = require('../model/Group');
 
 const getAllBots = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || null;
-    const skip = (page - 1) * limit;
+    const limit = parseInt(req.query.limit) || 20;
     const search = req.query.search || '';
     const searchOption = req.query.searchOption || 'all';
 
@@ -25,29 +24,27 @@ const getAllBots = async (req, res) => {
             }
         }
 
+        const options = {
+            page,
+            limit,
+        };
 
-        const bots = await Bot.find(query)
-            .skip(skip)
-            .limit(limit);
+        const bots = await Bot.paginate(query, options);
 
-
-        const totalBots = await Bot.countDocuments(query);
-
-        if (!bots || bots.length === 0) {
-            return res.status(204).json({ 'message': 'No bots found' });
+        if (!bots || bots.docs.length === 0) {
+            return res.status(204).json({ message: 'No bots found' });
         }
 
         res.json({
-            bots,
-            currentPage: page,
-            totalPages: Math.ceil(totalBots / limit)
+            bots: bots.docs,
+            currentPage: bots.page,
+            totalPages: bots.totalPages
         });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ 'message': 'Internal server error' });
+        res.status(500).json({ message: 'Internal server error' });
     }
 };
-
 
 const createBot = async (req, res) => {
     const { newName, description } = req.body;
@@ -61,7 +58,7 @@ const createBot = async (req, res) => {
         const bot = await Bot.findOne({ name }).exec();
         if (bot) return res.status(400).json({ 'message': 'Bot name already exists' });
 
-        const data = await uploadFile(file, "configuration");
+        const data = await uploadFile(file, "Script");
         const { path, downloadURL } = data;
 
         if (data?.status === 500) return res.status(500).json({ 'message': 'Internal server error' });
@@ -97,7 +94,15 @@ const deleteBot = async (req, res) => {
 
         await deleteFile(filePath);
 
-        return res.json(result);
+        //remove bot id from its associated groups
+        const groups = await Group.find({ bots: bot._id }).exec();
+
+        groups.forEach(async group => {
+            group.bots = group.bots.filter(id => id.toString() !== bot._id.toString());
+            await group.save();
+        });
+
+        res.json(result);
     } catch (error) {
         console.error('Error deleting bot:', error);
         return res.status(500).json({ message: 'Internal server error' });
@@ -165,91 +170,11 @@ const updateBot = async (req, res) => {
 }
 
 
-const configureBot = async (req, res) => {
-    const { file } = req.body;
-    if (!file) return res.status(400).json({ 'message': 'File required' });
-    //verify file
-    //save file
-    //save bot
-
-
-}
-
-const scheduleBot = async (req, res) => {
-    const { name, schedule } = req.body;
-
-    console.log('scheduleBot:', name, schedule);
-
-    if (!name || !schedule) return res.status(400).json({ 'message': 'Name and schedule required' });
-
-    try {
-        const bot = await Bot.findOne({ name }).exec();
-        if (!bot) {
-            return res.status(404).json({ 'message': `Bot name ${name} not found` });
-        }
-
-        const scheduleDate = new Date(schedule);
-
-        console.log('scheduleDate  :', scheduleDate, 'new data ', new Date(), scheduleDate > new Date());
-        console.log('schedule ', schedule, schedule > new Date());
-
-        if (scheduleDate < new Date()) {
-            return res.status(400).json({ 'message': 'Invalid schedule date' });
-        }
-
-        if (bot.isScheduled) {
-            return res.status(400).json({ 'message': `Bot ${name} is already scheduled` });
-        }
-
-
-
-        const job = scheduler.scheduleJob(name, schedule, async function () {
-            try {
-                if (bot.status === 'active') {
-                    job.cancel();
-                    console.log(`Bot ${name} was already running`);
-                }
-                bot.status = 'active';
-                await bot.save();
-                console.log('Running bot:', name);
-            } catch (error) {
-                console.error('Error running bot:', error);
-            }
-        });
-        bot.isScheduled = true;
-        bot.schedule = schedule;
-        await bot.save();
-
-        return res.json({ 'message': `Bot ${name} scheduled` });
-    } catch (error) {
-        console.error('Error scheduling bot:', error);
-        return res.status(500).json({ 'message': 'Internal server error' });
-    }
-};
-
-
-const runOrStopBot = async (req, res) => {
-    const { name, status } = req.body;
-    if (!name || !status) return res.status(400).json({ 'message': 'Name and status required' });
-    const bot = await Bot.findOne({ name }).exec();
-    if (!bot) {
-        return res.status(404).json({ 'message': `Bot name ${name} not found` });
-    }
-    if (bot.status === status) return res.status(400).json({ 'message': `Bot is already ${status}` });
-    bot.status = status;
-    const result = await bot.save();
-    res.json(result);
-}
-
-
-
 
 module.exports = {
     getAllBots,
     createBot,
     deleteBot,
     getBot,
-    updateBot,
-    runOrStopBot,
-    scheduleBot
+    updateBot
 };

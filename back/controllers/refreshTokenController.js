@@ -24,7 +24,7 @@ const handleRefreshToken = async (req, res) => {
                 process.env.ACCESS_TOKEN_SECRET,
                 { expiresIn: '1d' }
             );
-            res.json({ role, accessToken , matricule: decoded.matricule})
+            res.json({ role, accessToken, matricule: decoded.matricule, group: foundUser.group, userId: foundUser._id })
         }
     );
 }

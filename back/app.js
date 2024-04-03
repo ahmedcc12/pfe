@@ -14,10 +14,19 @@ const PORT = process.env.PORT || 3500;
 const rateLimit = require("express-rate-limit");
 const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
-
+const compression = require('compression');
+const timeout = require('connect-timeout');
 
 // Connect to MongoDB
 connectDB();
+
+const setNoCacheHeaders = (req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    next();
+};
+
 
 // Apply rate limiting middleware
 const limiter = rateLimit({
@@ -26,6 +35,8 @@ const limiter = rateLimit({
     message: "Too many requests, please try again later"
 });
 app.use(limiter);
+
+app.use(setNoCacheHeaders);
 
 // Set HTTP headers for security with Helmet
 app.use(helmet());
@@ -47,6 +58,15 @@ app.use(express.json({ limit: "10kb" }));
 
 app.use(cookieParser());
 
+app.use(compression());
+
+app.use(timeout('3m'));
+
+
+/* app.use((req, res, next) => {
+    setTimeout(next, 2000);
+}); */
+
 // routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/refresh', require('./routes/refresh'))
@@ -57,12 +77,21 @@ app.use('/api/auth/resetpassword/:token', require('./routes/auth'));
 
 app.use(verifyJWT);
 app.use('/api/register', require('./routes/register'));
+
 app.use('/api/users', require('./routes/api/users'));
-app.use('/api/users/userbots', require('./routes/api/users'));
 app.use('/api/users/:matricule', require('./routes/api/users'));
+
 app.use('/api/bots', require('./routes/api/bot'));
 app.use('/api/bots/:name', require('./routes/api/bot'));
 
+app.use('/api/groups', require('./routes/api/group'));
+app.use('/api/groups/:id', require('./routes/api/group'));
+app.use('/api/groups/:id/bots', require('./routes/api/group'));
+
+app.use('/api/botinstances', require('./routes/api/botInstance'));
+app.use('/api/botinstances/scheduled', require('./routes/api/botInstance'));
+app.use('/api/botinstances/:id', require('./routes/api/botInstance'));
+app.use('/api/botinstances/status/:userid/:botid', require('./routes/api/botInstance'));
 
 mongoose.connection.once('open', () => {
     console.log('Connected to MongoDB');

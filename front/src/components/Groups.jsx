@@ -8,14 +8,15 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faTrash,
     faPencilAlt,
-    faDownload,
+    faEye,
 } from "@fortawesome/free-solid-svg-icons";
 import useAuth from "../hooks/useAuth";
 import debounce from "lodash.debounce";
+import BotModal from "../components/BotModal"
 import { TailSpin } from "react-loader-spinner";
 
-const Bots = () => {
-    const [bots, setBots] = useState();
+const Groups = () => {
+    const [groups, setGroups] = useState();
     const axiosPrivate = useAxiosPrivate();
     const navigate = useNavigate();
     const [totalPages, setTotalPages] = useState(1);
@@ -25,25 +26,31 @@ const Bots = () => {
     const [searchOption, setSearchOption] = useState("all");
     const [loading, setLoading] = useState(false);
     const { auth } = useAuth();
+    const [showModal, setShowModal] = useState(false);
+    const [botNames, setBotNames] = useState([]);
+    const [modalIsLoading, setModalIsLoading] = useState(false);
     const [nextPageisLoading, setNextPageisLoading] = useState(false);
+    const [selectedGroup, setSelectedGroup] = useState(null);
 
 
     useEffect(() => {
-        localStorage.setItem("adminActiveComponent", "bots");
+        localStorage.setItem("adminActiveComponent", "groups");
     }, []);
 
-    const fetchBots = async (value) => {
+    const fetchGroups = async (value) => {
         try {
             if (!nextPageisLoading)
                 setLoading(true);
             const response = await axiosPrivate.get(
-                `/bots?page=${currentPage + 1
+                `/groups?page=${currentPage + 1
                 }&limit=${limit}&search=${value}&searchOption=${searchOption}`
             );
-            setBots(response.data.bots);
+            setGroups(response.data.groups);
             setTotalPages(response.data.totalPages);
+            setLoading(false);
         } catch (err) {
             console.error(err);
+            //navigate('/login', { state: { from: location }, replace: true });
         } finally {
             setNextPageisLoading(false);
             setLoading(false);
@@ -51,7 +58,7 @@ const Bots = () => {
     };
 
     const request = debounce(async (value) => {
-        await fetchBots(value);
+        await fetchGroups(value);
     }, 500);
 
     const onChangeSearch = (e) => {
@@ -63,28 +70,18 @@ const Bots = () => {
 
     const debounceRequest = useCallback((search) => request(search), [searchOption]);
 
-    useEffect(() => {
-        if (search !== "") {
-            setCurrentPage(0);
-            const fetchData = async () => {
-                await fetchBots(search);
-            };
-
-            fetchData();
-        }
-    }, [searchOption]);
 
     useEffect(() => {
         const fetchData = async () => {
-            await fetchBots(search);
+            await fetchGroups(search);
         };
         fetchData();
     }, [currentPage]);
 
-    const deleteBot = async (name) => {
+    const deleteGroup = async (_id) => {
         const result = await Swal.fire({
             title: "Are you sure?",
-            text: "You will not be able to recover this bot!",
+            text: "You will not be able to recover this group!",
             icon: "warning",
             showCancelButton: true,
             confirmButtonText: "Yes, delete it!",
@@ -94,28 +91,54 @@ const Bots = () => {
         if (result.isConfirmed) {
             try {
                 Swal.fire({
-                    title: "Deleting bot...",
+                    title: "Deleting group...",
                     allowOutsideClick: false,
                     allowEscapeKey: false,
                 });
                 Swal.showLoading();
-                await axiosPrivate.delete(`/bots/${name}`);
-                Swal.fire("Deleted!", "Bot has been deleted.", "success");
-                await fetchBots(search);
+                await axiosPrivate.delete(`/groups/${_id}`);
+                Swal.fire("Deleted!", "Group has been deleted.", "success");
+                await fetchGroups(search);
             } catch (error) {
-                Swal.fire("Error!", "Failed to delete bot.", "error");
+                Swal.fire("Error!", "Failed to delete group.", "error");
             }
         } else {
         }
     };
 
-    const editBot = (name) => {
-        navigate(`/admin/bot/edit/${name}`);
+    const editGroup = (groupId) => {
+        navigate(`/admin/group/editGroup/${groupId}`);
     };
+
+    const viewBots = async (_id, name) => {
+        try {
+            setModalIsLoading(true);
+            const response = await axiosPrivate.get(`/groups/${_id}/bots`);
+            setModalIsLoading(false);
+            setSelectedGroup(name);
+            openModal(response?.data?.bots?.map(bot => bot?.name));
+        } catch (error) {
+            console.error(error);
+            setModalIsLoading(false);
+            Swal.fire("Error!", "Failed to get bots", "error");
+
+        }
+    };
+
+    const openModal = (names) => {
+        setBotNames(names);
+        setShowModal(true);
+    };
+
+    const closeModal = () => {
+        setBotNames([]);
+        setShowModal(false);
+    };
+
 
     return (
         <article>
-            <h2>Bots List</h2>
+            <h2>Groups List</h2>
             <hr className="my-4" />
 
             <div className="p-4">
@@ -155,18 +178,16 @@ const Bots = () => {
                         >
                             <option value="all">All</option>
                             <option value="name">name</option>
-                            <option value="description">description</option>
-                            <option value="status">status</option>
                         </select>
                         <label className="pointer-events-none absolute left-0 -top-1.5 flex h-full w-full select-none text-[11px] font-normal leading-tight text-blue-gray-400 transition-all before:pointer-events-none before:mt-[6.5px] before:mr-1 before:box-border before:block before:h-1.5 before:w-2.5 before:rounded-tl-md before:border-t before:border-l before:border-blue-gray-200 before:transition-all after:pointer-events-none after:mt-[6.5px] after:ml-1 after:box-border after:block after:h-1.5 after:w-2.5 after:flex-grow after:rounded-tr-md after:border-t after:border-r">
                             Search by
                         </label>
                     </div>
                     <Link
-                        to="/admin/bot/add"
+                        to="/admin/group/createGroup"
                         className="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-6 border border-gray-400 rounded shadow ml-4"
                     >
-                        add bot
+                        add group
                     </Link>
                 </div>
             </div>
@@ -177,7 +198,7 @@ const Bots = () => {
                 </div>
             ) : (
                 <>
-                    {bots?.length ? (
+                    {groups?.length ? (
                         <>
                             {nextPageisLoading ? (
                                 <div className="flex justify-center items-center h-40">
@@ -203,20 +224,9 @@ const Bots = () => {
                                                 scope="col"
                                                 className="text-sm font-bold text-gray-900 px-6 py-4 text-left"
                                             >
-                                                Description
+                                                Bots
                                             </th>
-                                            <th
-                                                scope="col"
-                                                className="text-sm font-bold text-gray-900 px-6 py-4 text-left"
-                                            >
-                                                Status
-                                            </th>
-                                            <th
-                                                scope="col"
-                                                className="text-sm font-bold text-gray-900 px-6 py-4 text-left"
-                                            >
-                                                Configuration
-                                            </th>
+
                                             {auth.role == "admin" ? (
                                                 <th
                                                     scope="col"
@@ -228,7 +238,7 @@ const Bots = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {bots.map((bot, index) => (
+                                        {groups.map((group, index) => (
                                             <tr
                                                 key={index}
                                                 className={index % 2 === 0 ? "bg-gray-100" : ""}
@@ -238,37 +248,35 @@ const Bots = () => {
                                                 </td>
 
                                                 <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">
-                                                    {bot.name}
+                                                    {group.name}
                                                 </td>
-
                                                 <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">
-                                                    {bot.description}
-                                                </td>
-
-                                                <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">
-                                                    {bot.status}
-                                                </td>
-
-                                                <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">
-                                                    <a className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center"
-                                                        href={bot.configuration?.downloadURL}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        title="Download"
+                                                    <button
+                                                        type="button"
+                                                        title="viewBots"
+                                                        className="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2"
+                                                        onClick={() => viewBots(group._id, group.name)}
                                                     >
-                                                        <FontAwesomeIcon className="fill-current w-4 h-4 mr-2" icon={faDownload} />
-                                                        <span>Download</span>
-                                                    </a>
-                                                </td>
+                                                        <FontAwesomeIcon icon={faEye} />
+                                                        <span className="ml-2">
+                                                            {group.bots.length} Bots
+                                                        </span>
 
-                                                {
+                                                    </button>
+                                                    {
+                                                        modalIsLoading ? <div className="fixed top-0 left-0 z-50 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+                                                            <TailSpin color="#3B82F6" height={50} width={50} />
+                                                        </div> : null
+                                                    }
+
+                                                </td>                                            {
                                                     auth.role == "user" ? null : (
                                                         <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">
                                                             <button
                                                                 type="button"
                                                                 title="Delete"
                                                                 className="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900"
-                                                                onClick={() => deleteBot(bot.name)}
+                                                                onClick={() => deleteGroup(group._id)}
                                                             >
                                                                 <FontAwesomeIcon icon={faTrash} />
                                                             </button>
@@ -276,7 +284,7 @@ const Bots = () => {
                                                                 type="button"
                                                                 title="Edit"
                                                                 className="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                                                                onClick={() => editBot(bot.name)}
+                                                                onClick={() => editGroup(group._id)}
                                                             >
                                                                 <FontAwesomeIcon icon={faPencilAlt} />
                                                             </button>
@@ -296,13 +304,21 @@ const Bots = () => {
                             />
                         </>
                     ) : (
-                        <p>No bots to display</p>
+                        <p>No groups to display</p>
                     )}
                 </>
             )
+            }
+            {showModal &&
+                <BotModal
+                    isOpen={showModal}
+                    onClose={closeModal}
+                    botNames={botNames}
+                    groupName={selectedGroup}
+                />
             }
         </article >
     );
 };
 
-export default Bots;
+export default Groups;

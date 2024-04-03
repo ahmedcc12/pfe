@@ -10,42 +10,42 @@ const handleLogin = async (req, res) => {
 
     const foundUser = await User.findOne({ email: email }).exec();
     if (!foundUser) {
-        return res.sendStatus(401).json({'message': 'Invalid email or password'})
+        return res.sendStatus(401).json({ 'message': 'Invalid email or password' })
     }
 
     const match = await bcrypt.compare(pwd, foundUser.password);
 
-    if(!match) return res.status(401).json({'message': 'Invalid email or password'})
+    if (!match) return res.status(401).json({ 'message': 'Invalid email or password' })
 
-        const role = foundUser.role;
-        const matricule = foundUser.matricule;
-        const accessToken = jwt.sign(
-            {
-                "UserInfo": {
-                    "matricule": foundUser.matricule,
-                    "role": role
-                }
-            },
-            process.env.ACCESS_TOKEN_SECRET,
-            { expiresIn: '10s' }
-        );
-        const refreshToken = jwt.sign(
-            { "matricule": foundUser.matricule },
-            process.env.REFRESH_TOKEN_SECRET,
-            { expiresIn: '1d' }
-        );
+    const role = foundUser.role;
+    const matricule = foundUser.matricule;
+    const accessToken = jwt.sign(
+        {
+            "UserInfo": {
+                "matricule": foundUser.matricule,
+                "role": role
+            }
+        },
+        process.env.ACCESS_TOKEN_SECRET,
+        { expiresIn: '10s' }
+    );
+    const refreshToken = jwt.sign(
+        { "matricule": foundUser.matricule },
+        process.env.REFRESH_TOKEN_SECRET,
+        { expiresIn: '1d' }
+    );
 
-        foundUser.refreshToken = refreshToken;
-        await foundUser.save();
+    foundUser.refreshToken = refreshToken;
+    await foundUser.save();
 
-        // Creates Secure Cookie with refresh token
-        res.cookie('jwt', refreshToken, { httpOnly: true, secure: true, sameSite: 'None', maxAge: 24 * 60 * 60 * 1000 });
+    // Creates Secure Cookie with refresh token
+    res.cookie('jwt', refreshToken, { httpOnly: true, secure: true, sameSite: 'None', maxAge: 24 * 60 * 60 * 1000 });
 
-        res.json({ matricule ,role, accessToken });
+    res.json({ matricule, role, accessToken, group: foundUser.group, userId: foundUser._id });
 
-        console.log("User logged in");
-        
+    console.log("User logged in");
+
 }
 
 
-module.exports = { handleLogin ,};
+module.exports = { handleLogin, };
