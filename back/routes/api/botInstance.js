@@ -4,6 +4,7 @@ const botInstanceController = require('../../controllers/botInstanceController')
 const verifyRoles = require('../../middleware/verifyRoles');
 const ROLES_LIST = require('../../config/roles_list');
 const { validate } = require('../../middleware/validators/validate');
+const { createBotInstancesValidationRules, scheduleBotValidationRules, userIdValidationRules, userAndBotIdsValidationRules, paramBotInstanceValidationRules } = require('../../middleware/validators/botInstanceValidator');
 const upload = require('../../middleware/multer');
 
 router.route('/')

@@ -11,10 +11,17 @@ const ResetPassword = () => {
   const [message, setMessage] = useState('');
   const [tokenValid, setTokenValid] = useState(false);
   const { auth } = useAuth();
+  const abortController = new AbortController();
 
   useEffect(() => {
     setMessage('');
   }, [newPassword, confirmPassword]);
+
+  useEffect(() => {
+    return () => {
+      abortController.abort();
+    };
+  }, []);
 
   useEffect(() => {
     setTokenValid(true);

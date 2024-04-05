@@ -1,7 +1,6 @@
 require('dotenv').config();
 const express = require('express');
 const app = express();
-const path = require('path');
 const cors = require('cors');
 const corsOptions = require('./config/corsOptions');
 const verifyJWT = require('./middleware/verifyJWT');
@@ -26,7 +25,6 @@ const setNoCacheHeaders = (req, res, next) => {
     res.setHeader('Expires', '0');
     next();
 };
-
 
 // Apply rate limiting middleware
 const limiter = rateLimit({
@@ -62,7 +60,6 @@ app.use(compression());
 
 app.use(timeout('3m'));
 
-
 /* app.use((req, res, next) => {
     setTimeout(next, 2000);
 }); */
@@ -93,7 +90,30 @@ app.use('/api/botinstances/scheduled', require('./routes/api/botInstance'));
 app.use('/api/botinstances/:id', require('./routes/api/botInstance'));
 app.use('/api/botinstances/status/:userid/:botid', require('./routes/api/botInstance'));
 
-mongoose.connection.once('open', () => {
-    console.log('Connected to MongoDB');
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.use('/api/notifications', require('./routes/api/notification'));
+app.use('/api/notifications/:userid', require('./routes/api/notification'));
+app.use('/api/notifications/:id', require('./routes/api/notification'));
+app.use('/api/notifications/unread/:userid', require('./routes/api/notification'));
+
+
+const server = app.listen(
+    PORT,
+    console.log(`Server running on PORT ${PORT}...`)
+);
+
+const io = require("socket.io")(server, {
+    pingTimeout: 60000,
+    cors: {
+        origin: 'http://localhost:5173',
+    }
 });
+
+global.io = io;
+
+io.sockets.on("connection", (socket) => {
+    //console.log("New client connected");
+});
+
+
+
+

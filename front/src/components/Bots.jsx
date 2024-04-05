@@ -26,10 +26,17 @@ const Bots = () => {
     const [loading, setLoading] = useState(false);
     const { auth } = useAuth();
     const [nextPageisLoading, setNextPageisLoading] = useState(false);
+    const abortController = new AbortController();
 
 
     useEffect(() => {
         localStorage.setItem("adminActiveComponent", "bots");
+    }, []);
+
+    useEffect(() => {
+        return () => {
+            abortController.abort();
+        };
     }, []);
 
     const fetchBots = async (value) => {
@@ -38,7 +45,10 @@ const Bots = () => {
                 setLoading(true);
             const response = await axiosPrivate.get(
                 `/bots?page=${currentPage + 1
-                }&limit=${limit}&search=${value}&searchOption=${searchOption}`
+                }&limit=${limit}&search=${value}&searchOption=${searchOption}`,
+                {
+                    signal: abortController.signal,
+                }
             );
             setBots(response.data.bots);
             setTotalPages(response.data.totalPages);
@@ -99,7 +109,9 @@ const Bots = () => {
                     allowEscapeKey: false,
                 });
                 Swal.showLoading();
-                await axiosPrivate.delete(`/bots/${name}`);
+                await axiosPrivate.delete(`/bots/${name}`, {
+                    cancelToken: source.token,
+                });
                 Swal.fire("Deleted!", "Bot has been deleted.", "success");
                 await fetchBots(search);
             } catch (error) {
@@ -156,7 +168,6 @@ const Bots = () => {
                             <option value="all">All</option>
                             <option value="name">name</option>
                             <option value="description">description</option>
-                            <option value="status">status</option>
                         </select>
                         <label className="pointer-events-none absolute left-0 -top-1.5 flex h-full w-full select-none text-[11px] font-normal leading-tight text-blue-gray-400 transition-all before:pointer-events-none before:mt-[6.5px] before:mr-1 before:box-border before:block before:h-1.5 before:w-2.5 before:rounded-tl-md before:border-t before:border-l before:border-blue-gray-200 before:transition-all after:pointer-events-none after:mt-[6.5px] after:ml-1 after:box-border after:block after:h-1.5 after:w-2.5 after:flex-grow after:rounded-tr-md after:border-t after:border-r">
                             Search by
@@ -209,12 +220,6 @@ const Bots = () => {
                                                 scope="col"
                                                 className="text-sm font-bold text-gray-900 px-6 py-4 text-left"
                                             >
-                                                Status
-                                            </th>
-                                            <th
-                                                scope="col"
-                                                className="text-sm font-bold text-gray-900 px-6 py-4 text-left"
-                                            >
                                                 Configuration
                                             </th>
                                             {auth.role == "admin" ? (
@@ -243,10 +248,6 @@ const Bots = () => {
 
                                                 <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">
                                                     {bot.description}
-                                                </td>
-
-                                                <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">
-                                                    {bot.status}
                                                 </td>
 
                                                 <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">

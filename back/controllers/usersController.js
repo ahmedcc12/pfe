@@ -94,7 +94,7 @@ const getUser = async (req, res) => {
 const updateUser = async (req, res) => {
     if (!req.params?.matricule) return res.status(400).json({ "message": 'User ID required' });
 
-    const { newMatricule, email, firstname, lastname, department, role, selectedBots, group } = req.body;
+    const { newMatricule, email, firstname, lastname, department, role, group } = req.body;
 
     if (!newMatricule || !email || !firstname || !lastname || !department || !role || !group) {
         return res.status(400).json({ 'message': 'Missing required fields.' });

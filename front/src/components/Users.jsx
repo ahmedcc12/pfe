@@ -24,16 +24,25 @@ const Users = () => {
     const [loading, setLoading] = useState(false);
     const { auth } = useAuth();
     const [nextPageisLoading, setNextPageisLoading] = useState(false);
+    const abortController = new AbortController();
 
     useEffect(() => {
         localStorage.setItem('adminActiveComponent', 'users');
+    }, []);
+
+    useEffect(() => {
+        return () => {
+            abortController.abort();
+            Swal.close();
+        };
     }, []);
 
     const fetchUsers = async (value) => {
         try {
             if (!nextPageisLoading)
                 setLoading(true);
-            const response = await axiosPrivate.get(`/users?page=${currentPage + 1}&limit=${limit}&search=${value}&searchOption=${searchOption}`);
+            const response = await axiosPrivate.get(`/users?page=${currentPage + 1}&limit=${limit}&search=${value}&searchOption=${searchOption}`,
+                { signal: abortController.signal });
             setUsers(response.data.users);
             setTotalPages(response.data.totalPages);
         } catch (err) {
@@ -47,7 +56,6 @@ const Users = () => {
     };
 
     const request = debounce(async (value) => {
-        console.log('search', value, 'searchOption', searchOption);
         await fetchUsers(value);
     }, 500);
 
@@ -96,13 +104,18 @@ const Users = () => {
                     allowEscapeKey: false,
                 });
                 Swal.showLoading();
-                await axiosPrivate.delete(`/users/${matricule}`);
+                setNextPageisLoading(true);
+                await axiosPrivate.delete(`/users/${matricule}`,
+                    { signal: abortController.signal });
                 Swal.fire(
                     'Deleted!',
                     'User has been deleted.',
                     'success'
                 );
-                await fetchUsers(search);
+                const newUsers = users.filter(user => user.matricule !== matricule);
+                setUsers(newUsers);
+                setNextPageisLoading(false);
+
             } catch (error) {
                 Swal.fire(
                     'Error!',
@@ -178,7 +191,7 @@ const Users = () => {
                     {users?.length ? (
                         <>
                             {nextPageisLoading ? (
-                                <div className="flex justify-center items-center h-40">
+                                <div div className="flex justify-center items-center h-40">
                                     <TailSpin color="#3B82F6" height={50} width={50} />
                                 </div>
                             ) : (
@@ -216,7 +229,7 @@ const Users = () => {
                                                 <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">{user.group.name}</td>
 
                                                 <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">
-                                                    {user.role === 'admin' ? <td></td> :
+                                                    {user.role === 'admin' ? null :
                                                         <button
                                                             title="Delete"
                                                             type="button"
@@ -238,7 +251,7 @@ const Users = () => {
                                                             </button>
                                                         </>
                                                         :
-                                                        <td></td>
+                                                        null
                                                     }
                                                 </td>
 
@@ -258,9 +271,10 @@ const Users = () => {
                         <p>No users to display</p>
                     )}
                 </>
-            )}
+            )
+            }
 
-        </article>
+        </article >
     );
 };
 

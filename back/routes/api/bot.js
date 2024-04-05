@@ -35,10 +35,10 @@ router.route('/:name')
     )
     .put(
         verifyRoles(ROLES_LIST.Admin),
-        upload.single('file'),
         paramBotValidationRules(),
         BotValidationRules(),
         validate,
+        upload.single('file'),
         botController.updateBot
     );
 

@@ -6,7 +6,8 @@ import useLogout from "../hooks/useLogout";
 import ProfileModal from "./ProfileModal";
 import { TailSpin } from "react-loader-spinner";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
-
+import Swal from "sweetalert2";
+import NotificationBell from "./NotificationBell";
 
 export function NavbarDefault() {
   const { auth } = useAuth();
@@ -22,6 +23,19 @@ export function NavbarDefault() {
   const signOut = async () => {
     await logout();
   };
+
+
+  useEffect(() => {
+    if (showModal) {
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.paddingRight = '0';
+      document.body.style.overflow = 'unset';
+    }
+  }, [showModal]);
+
 
   const openProfileModal = async () => {
     setModalIsLoading(true);
@@ -71,25 +85,15 @@ export function NavbarDefault() {
                       </Link>
                     ) : null}
                   </div>
-                  {auth.accessToken ? (
-                    <button
-                      className="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
-                      variant="gradient"
-                      size="sm"
-                      onClick={signOut}
-                    >
-                      Logout
-                    </button>
-                  ) : (
-                    <Link
-                      to="/login"
-                      className="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
-                      variant="text"
-                      size="sm"
-                    >
-                      Login
-                    </Link>
-                  )}
+                  <button
+                    className="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
+                    variant="gradient"
+                    size="sm"
+                    onClick={signOut}
+                  >
+                    Logout
+                  </button>
+                  <NotificationBell />
                   <button
                     onClick={() => openProfileModal()}
                     className="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow"

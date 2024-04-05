@@ -20,7 +20,6 @@ const handleForgotPassword = async (req, res) => {
 
     foundUser.resetToken = resetToken;
 
-
     const mailOptions = {
         from: process.env.MAIL,
         to: email,

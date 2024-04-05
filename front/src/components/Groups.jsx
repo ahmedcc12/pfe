@@ -31,10 +31,17 @@ const Groups = () => {
     const [modalIsLoading, setModalIsLoading] = useState(false);
     const [nextPageisLoading, setNextPageisLoading] = useState(false);
     const [selectedGroup, setSelectedGroup] = useState(null);
+    const abortController = new AbortController();
 
 
     useEffect(() => {
         localStorage.setItem("adminActiveComponent", "groups");
+    }, []);
+
+    useEffect(() => {
+        return () => {
+            abortController.abort();
+        };
     }, []);
 
     const fetchGroups = async (value) => {
@@ -43,7 +50,8 @@ const Groups = () => {
                 setLoading(true);
             const response = await axiosPrivate.get(
                 `/groups?page=${currentPage + 1
-                }&limit=${limit}&search=${value}&searchOption=${searchOption}`
+                }&limit=${limit}&search=${value}&searchOption=${searchOption}`,
+                { signal: abortController.signal }
             );
             setGroups(response.data.groups);
             setTotalPages(response.data.totalPages);
@@ -96,9 +104,12 @@ const Groups = () => {
                     allowEscapeKey: false,
                 });
                 Swal.showLoading();
-                await axiosPrivate.delete(`/groups/${_id}`);
+                setNextPageisLoading(true);
+                await axiosPrivate.delete(`/groups/${_id}`, { signal: abortController.signal });
                 Swal.fire("Deleted!", "Group has been deleted.", "success");
-                await fetchGroups(search);
+                setGroups(groups.filter((group) => group._id !== _id));
+                setNextPageisLoading(false);
+
             } catch (error) {
                 Swal.fire("Error!", "Failed to delete group.", "error");
             }
@@ -113,7 +124,8 @@ const Groups = () => {
     const viewBots = async (_id, name) => {
         try {
             setModalIsLoading(true);
-            const response = await axiosPrivate.get(`/groups/${_id}/bots`);
+            const response = await axiosPrivate.get(`/groups/${_id}/bots`,
+                { signal: abortController.signal });
             setModalIsLoading(false);
             setSelectedGroup(name);
             openModal(response?.data?.bots?.map(bot => bot?.name));
@@ -269,7 +281,8 @@ const Groups = () => {
                                                         </div> : null
                                                     }
 
-                                                </td>                                            {
+                                                </td>
+                                                {
                                                     auth.role == "user" ? null : (
                                                         <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">
                                                             <button

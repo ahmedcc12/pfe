@@ -158,7 +158,8 @@ const getBotsByGroup = async (req, res) => {
         if (!bots || bots.docs.length === 0) {
             return res.status(204).json({ message: 'No bots found' });
         }
-        //send data after 500000ms
+
+
         res.json({
             bots: bots.docs,
             currentPage: bots.page,

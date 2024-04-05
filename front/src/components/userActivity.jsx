@@ -7,6 +7,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye } from "@fortawesome/free-solid-svg-icons";
 import Pagination from "../components/Pagination";
 import debounce from "lodash.debounce";
+import dayjs from "dayjs";
+import { io } from "socket.io-client";
 
 const UserActivity = () => {
     const { auth } = useAuth();
@@ -19,9 +21,31 @@ const UserActivity = () => {
     const [nextPageisLoading, setNextPageisLoading] = useState(false);
     const [search, setSearch] = useState("");
     const [searchOption, setSearchOption] = useState("all");
+    const abortController = new AbortController();
+    const ENDPOINT = 'http://localhost:9000';
 
     useEffect(() => {
         localStorage.setItem('userActiveComponent', 'userActivity');
+    }, []);
+
+    useEffect(() => {
+        return () => {
+            abortController.abort();
+        };
+    }, []);
+
+    useEffect(() => {
+        const socket = io(ENDPOINT);
+
+        socket.on('botStarted', ({ userId, botId }) => {
+            if (userId === auth.userId) {
+                fetchActivity(search);
+            }
+        });
+
+        return () => {
+            socket.off();
+        }
     }, []);
 
 
@@ -30,7 +54,8 @@ const UserActivity = () => {
             if (!nextPageisLoading)
                 setLoading(true);
             const response = await axiosPrivate.get(`/botinstances/user/${auth.userId}?page=${currentPage + 1
-                }&limit=${limit}&search=${value}&searchOption=${searchOption}`);
+                }&limit=${limit}&search=${value}&searchOption=${searchOption}`,
+                { signal: abortController.signal });
             setActivity(response.data.botInstances);
             setTotalPages(response.data.totalPages);
         } catch (err) {
@@ -114,9 +139,6 @@ const UserActivity = () => {
                             className="peer h-full w-full rounded-[7px] border border-blue-gray-200 border-t-transparent bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 empty:!bg-gray-900 disabled:border-0 disabled:bg-blue-gray-50"
                         >
                             <option value="all">All</option>
-                            <option value="name">name</option>
-                            <option value="description">description</option>
-                            <option value="status">status</option>
                         </select>
                         <label className="pointer-events-none absolute left-0 -top-1.5 flex h-full w-full select-none text-[11px] font-normal leading-tight text-blue-gray-400 transition-all before:pointer-events-none before:mt-[6.5px] before:mr-1 before:box-border before:block before:h-1.5 before:w-2.5 before:rounded-tl-md before:border-t before:border-l before:border-blue-gray-200 before:transition-all after:pointer-events-none after:mt-[6.5px] after:ml-1 after:box-border after:block after:h-1.5 after:w-2.5 after:flex-grow after:rounded-tr-md after:border-t after:border-r">
                             Search by
@@ -180,7 +202,18 @@ const UserActivity = () => {
                                                     {instance.bot.name}
                                                 </td>
                                                 <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">
-                                                    {instance.status}
+                                                    {instance.status === "active" ? (
+                                                        <span className="text-green-500">Running</span>
+                                                    )
+                                                        : instance.status === "inactive" && instance.isScheduled ? (
+                                                            <span className="text-yellow-500">Scheduled for {dayjs(instance.scheduledAt).format('D,MMMM, YYYY, h:mm:ss A')}</span>
+                                                        )
+                                                            : instance.status === "inactive" ? (
+                                                                <span className="text-red-500">Stopped</span>
+                                                            )
+                                                                : (
+                                                                    <span className="text-red-500">Error</span>
+                                                                )}
                                                 </td>
                                                 <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">
                                                     <a

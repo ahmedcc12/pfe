@@ -23,6 +23,14 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const Navigate = useNavigate();
+  const abortController = new AbortController();
+
+  useEffect(() => {
+    return () => {
+      abortController.abort();
+      Swal.close();
+    };
+  }, []);
 
 
 
@@ -33,7 +41,7 @@ export default function RegisterPage() {
     const fetchUser = async () => {
       try {
         console.log("fetching user with id ", matricule)
-        const { data } = await axiosPrivate.get(`/users/${matricule}`);
+        const { data } = await axiosPrivate.get(`/users/${matricule}`, { signal: abortController.signal });
         setFirstname(data.firstname);
         setLastname(data.lastname);
         setDepartment(data.department);
@@ -93,6 +101,8 @@ export default function RegisterPage() {
           title: "User updated",
           icon: "success",
           confirmButtonText: "Ok",
+        }).then(() => {
+          setSuccess(true);
         });
       } else {
         Swal.fire({
@@ -115,9 +125,10 @@ export default function RegisterPage() {
           title: "User registered",
           icon: "success",
           confirmButtonText: "Ok",
+        }).then(() => {
+          setSuccess(true);
         });
       }
-      setSuccess(true);
     } catch (err) {
       console.error("Error registering user", err);
       const errorMessage = err.response?.data?.message || "An error occurred";
@@ -128,7 +139,7 @@ export default function RegisterPage() {
   useEffect(() => {
     const fetchGroups = async () => {
       try {
-        const { data } = await axiosPrivate.get("/groups");
+        const { data } = await axiosPrivate.get("/groups", { signal: abortController.signal });
         console.log("data", data);
         setAllGroups(data.groups);
       } catch (error) {
@@ -208,6 +219,8 @@ export default function RegisterPage() {
                 onChange={(selectedOption) => setGroup(selectedOption)}
                 placeholder="Select group"
                 required
+                isLoading={!allGroups.length}
+                loadingMessage={() => "Loading groups..."}
               />
 
 

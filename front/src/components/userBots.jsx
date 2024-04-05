@@ -8,6 +8,7 @@ import debounce from "lodash.debounce";
 import Swal from "sweetalert2";
 import { TailSpin } from "react-loader-spinner";
 import UploadFileModal from "../components/uploadFileModal";
+import { io } from "socket.io-client";
 
 
 const UserBots = () => {
@@ -23,10 +24,36 @@ const UserBots = () => {
     const [nextPageisLoading, setNextPageisLoading] = useState(false);
     const [selectedBot, setSelectedBot] = useState(null);
     const [showModal, setShowModal] = useState(false);
+    const abortController = new AbortController();
+    const ENDPOINT = 'http://localhost:9000';
 
     useEffect(() => {
-        localStorage.setItem('ActiveComponent', 'userBots');
+        localStorage.setItem('userActiveComponent', 'userBots');
+        return () => {
+            abortController.abort();
+        };
     }, []);
+
+    useEffect(() => {
+        const socket = io(ENDPOINT);
+
+        socket.on('botStarted', ({ userId, botId }) => {
+            if (userId === auth.userId) {
+                setBots(prevBots => prevBots.map(bot => {
+                    if (bot._id === botId) {
+                        return { ...bot, status: 'active' };
+                    } else {
+                        return bot;
+                    }
+                }));
+            }
+        });
+
+        return () => {
+            socket.off();
+        };
+    }, []);
+
 
     const fetchBots = async (value) => {
         try {
@@ -34,11 +61,15 @@ const UserBots = () => {
                 setLoading(true);
             const response = await axiosPrivate.get(
                 `/groups/${auth.group}/bots?page=${currentPage + 1
-                }&limit=${limit}&search=${value}&searchOption=${searchOption}`
+                }&limit=${limit}&search=${value}&searchOption=${searchOption}`, {
+                signal: abortController.signal
+            }
             );
 
             await Promise.all(response.data.bots.map(async (bot) => {
-                const response = await axiosPrivate.get(`/botinstances/status/${auth.userId}/${bot._id}`);
+                const response = await axiosPrivate.get(`/botinstances/status/${auth.userId}/${bot._id}`,
+                    { signal: abortController.signal }
+                );
                 bot.status = response.data.status;
             }
             ));
@@ -74,8 +105,8 @@ const UserBots = () => {
             setCurrentPage(response.data.currentPage - 1);
             setLoading(false);
         } catch (err) {
+
             console.error(err);
-            //navigate('/login', { state: { from: location }, replace: true });
         } finally {
             setNextPageisLoading(false);
             setLoading(false);
@@ -132,7 +163,8 @@ const UserBots = () => {
                         allowEscapeKey: false,
                     });
                     Swal.showLoading();
-                    const respone = await axiosPrivate.delete(`/botinstances/status/${auth.userId}/${botId}`);
+                    const respone = await axiosPrivate.delete(`/botinstances/status/${auth.userId}/${botId}`,
+                        { signal: abortController.signal });
                     //update bot status 
                     setBots(prevBots => prevBots.map(bot => {
                         if (bot._id === botId) {
@@ -170,6 +202,18 @@ const UserBots = () => {
         setSelectedBot(null);
         setShowModal(false);
     };
+
+    useEffect(() => {
+        if (showModal) {
+            const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+            document.body.style.paddingRight = `${scrollbarWidth}px`;
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.paddingRight = '0';
+            document.body.style.overflow = 'unset';
+        }
+    }, [showModal]);
+
 
     return (
         <div>

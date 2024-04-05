@@ -19,6 +19,14 @@ export default function AddBot() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const Navigate = useNavigate();
+  const abortController = new AbortController();
+
+  useEffect(() => {
+    return () => {
+      abortController.abort();
+      Swal.close();
+    };
+  }, []);
 
   useEffect(() => {
     if (!name)
@@ -26,7 +34,7 @@ export default function AddBot() {
 
     const fetchBot = async () => {
       try {
-        const { data } = await axiosPrivate.get(`/bots/${name}`);
+        const { data } = await axiosPrivate.get(`/bots/${name}`, { signal: abortController.signal });
         setNewname(data.name);
         setDescription(data.description);
         if (data?.configuration?.downloadURL)
@@ -62,6 +70,8 @@ export default function AddBot() {
           title: "Bot updated",
           icon: "success",
           confirmButtonText: "Ok",
+        }).then(() => {
+          setSuccess(true);
         });
       } else {
         Swal.fire({
@@ -78,9 +88,10 @@ export default function AddBot() {
           title: "Bot added",
           icon: "success",
           confirmButtonText: "Ok",
+        }).then(() => {
+          setSuccess(true);
         });
       }
-      setSuccess(true);
     } catch (err) {
       console.error("Error registering bot", err);
       const errorMessage = err.response?.data?.message || "An error occurred";

@@ -20,7 +20,14 @@ export default function CreateGroup() {
     const [allBots, setAllBots] = useState([]);
     const [selectedBots, setSelectedBots] = useState([]);
     const [botsLoading, setBotsLoading] = useState(false);
+    const abortController = new AbortController();
 
+    useEffect(() => {
+        return () => {
+            abortController.abort();
+            Swal.close();
+        };
+    }, []);
 
     useEffect(() => {
         if (!groupId)
@@ -30,9 +37,9 @@ export default function CreateGroup() {
             try {
                 setBotsLoading(true);
                 console.log("fetching group with id ", groupId)
-                const { data } = await axiosPrivate.get(`/groups/${groupId}`);
+                const { data } = await axiosPrivate.get(`/groups/${groupId}`, { signal: abortController.signal });
                 setName(data.name);
-                const bots = await axiosPrivate.get(`/groups/${groupId}/bots`);
+                const bots = await axiosPrivate.get(`/groups/${groupId}/bots`, { signal: abortController.signal });
                 setSelectedBots(bots?.data?.bots?.map(bot => {
                     return {
                         label: bot.name,
@@ -68,8 +75,9 @@ export default function CreateGroup() {
                     title: "Group updated",
                     icon: "success",
                     confirmButtonText: "Ok",
+                }).then(() => {
+                    setSuccess(true);
                 });
-                setSuccess(true);
             } catch (error) {
                 console.error("Error updating group", error);
                 setErrMsg(error.response.data.message);
@@ -92,8 +100,9 @@ export default function CreateGroup() {
                 title: "Group created",
                 icon: "success",
                 confirmButtonText: "Ok",
+            }).then(() => {
+                setSuccess(true);
             });
-            setSuccess(true);
         } catch (error) {
             console.error("Error creating group", error);
             setErrMsg(error.response.data.message);
@@ -105,7 +114,7 @@ export default function CreateGroup() {
         const fetchBots = async () => {
             setBotsLoading(true);
             try {
-                const { data } = await axiosPrivate.get("/bots");
+                const { data } = await axiosPrivate.get("/bots", { signal: abortController.signal });
                 setAllBots(data.bots);
                 setBotsLoading(false);
             } catch (error) {
@@ -142,14 +151,6 @@ export default function CreateGroup() {
                                 onChange={(ev) => setName(ev.target.value)}
                                 maxLength={50}
                             />
-                            {/*<Select
-                                options={options}
-                                value={selectedBots}
-                                onChange={handleChange}
-                                isMulti
-                                isSearchable
-                                placeholder="Select bots"
-            />*/}
                             <MultiSelect
                                 options={options}
                                 value={selectedBots}

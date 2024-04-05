@@ -4,6 +4,7 @@ const schedule = require('node-schedule');
 const User = require('../model/User');
 const Bot = require('../model/Bot');
 const Group = require('../model/Group');
+const Notification = require('../model/Notification');
 
 const getAllBotInstances = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
@@ -157,6 +158,12 @@ const scheduleBot = async (req, res) => {
         return res.status(400).json({ 'message': 'Missing required fields' });
     }
 
+    if (new Date(scheduled) < new Date()) {
+        return res.status(400).json({
+            'message': 'Scheduled time is invalid. Please select a future date'
+        });
+    }
+
     try {
         const userExists = await User.findById(user).exec();
         if (!userExists) return res.status(400).json({ 'message': 'User not found' });
@@ -206,11 +213,27 @@ const scheduleBot = async (req, res) => {
             botInstance.isScheduled = false;
             botInstance.StartedAt = Date.now();
             await botInstance.save();
+            //send notification to use
+            const message = `${botExists.name} has been started`;
+            const notification = new Notification({
+                user,
+                message
+            });
+            if (notification) {
+                global.io.emit('newNotification', { userId: user });
+                global.io.emit('botStarted', { userId: user, botId: bot });
+                //create 100 notifications
+                for (let i = 0; i < 100; i++) {
+                    const result = await Notification.create(
+                        {
+                            user,
+                            message: message + i.toString()
+                        }
+                    );
+                }
+            }
         });
-
-
         res.json(result);
-
     }
     catch (error) {
         console.error(error);

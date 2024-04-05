@@ -8,7 +8,7 @@ const AdminHomePage = () => {
 
     return (
         <div className="container mx-auto mt-8">
-            <h1 className="text-2xl font-bold">Admn Dashboard</h1>
+            <h1 className="text-2xl font-bold">Admin Dashboard</h1>
             <hr className="my-4" />
             <div className="flex justify-center">
                 <button
