@@ -16,6 +16,9 @@ const mongoSanitize = require("express-mongo-sanitize");
 const compression = require('compression');
 const timeout = require('connect-timeout');
 
+const { deleteJob } = require('./controllers/notificationController');
+
+
 // Connect to MongoDB
 connectDB();
 
@@ -76,10 +79,10 @@ app.use(verifyJWT);
 app.use('/api/register', require('./routes/register'));
 
 app.use('/api/users', require('./routes/api/users'));
-app.use('/api/users/:matricule', require('./routes/api/users'));
+app.use('/api/users/:id', require('./routes/api/users'));
 
 app.use('/api/bots', require('./routes/api/bot'));
-app.use('/api/bots/:name', require('./routes/api/bot'));
+app.use('/api/bots/:id', require('./routes/api/bot'));
 
 app.use('/api/groups', require('./routes/api/group'));
 app.use('/api/groups/:id', require('./routes/api/group'));

@@ -86,7 +86,7 @@ const Users = () => {
         fetchData();
     }, [currentPage]);
 
-    const deleteUser = async (matricule) => {
+    const deleteUser = async (id) => {
         const result = await Swal.fire({
             title: 'Are you sure?',
             text: 'You will not be able to recover this user!',
@@ -105,14 +105,14 @@ const Users = () => {
                 });
                 Swal.showLoading();
                 setNextPageisLoading(true);
-                await axiosPrivate.delete(`/users/${matricule}`,
+                await axiosPrivate.delete(`/users/${id}`,
                     { signal: abortController.signal });
                 Swal.fire(
                     'Deleted!',
                     'User has been deleted.',
                     'success'
                 );
-                const newUsers = users.filter(user => user.matricule !== matricule);
+                const newUsers = users.filter(user => user._id !== id);
                 setUsers(newUsers);
                 setNextPageisLoading(false);
 
@@ -124,12 +124,13 @@ const Users = () => {
                 );
             }
         } else {
+
         }
     };
 
 
-    const editUser = (matricule) => {
-        navigate(`/admin/user/edit/${matricule}`);
+    const editUser = (id) => {
+        navigate(`/admin/user/edit/${id}`);
     }
 
 
@@ -191,7 +192,7 @@ const Users = () => {
                     {users?.length ? (
                         <>
                             {nextPageisLoading ? (
-                                <div div className="flex justify-center items-center h-40">
+                                <div className="flex justify-center items-center h-40">
                                     <TailSpin color="#3B82F6" height={50} width={50} />
                                 </div>
                             ) : (
@@ -211,7 +212,7 @@ const Users = () => {
                                     </thead>
                                     <tbody>
                                         {users.map((user, index) => (
-                                            <tr key={index} className={index % 2 === 0 ? "bg-gray-100" : ""}>
+                                            <tr key={user._id} className={index % 2 === 0 ? "bg-gray-100" : ""}>
                                                 <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">{currentPage * limit + index + 1}</td>
 
                                                 <td className="text-sm font-medium text-gray-900 px-6 py-4 text-left">{user.matricule}</td>
@@ -234,18 +235,18 @@ const Users = () => {
                                                             title="Delete"
                                                             type="button"
                                                             className="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900"
-                                                            onClick={() => deleteUser(user.matricule)}
+                                                            onClick={() => deleteUser(user._id)}
                                                         >
                                                             <FontAwesomeIcon icon={faTrash} />
                                                         </button>
                                                     }
-                                                    {((user.matricule === auth.matricule) || (user.role !== "admin")) ?
+                                                    {((user._id === auth.userId) || (user.role !== "admin")) ?
                                                         <>
                                                             <button
                                                                 title="edit"
                                                                 type="button"
                                                                 className="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                                                                onClick={() => editUser(user.matricule)}
+                                                                onClick={() => editUser(user._id)}
                                                             >
                                                                 <FontAwesomeIcon icon={faPencilAlt} />
                                                             </button>

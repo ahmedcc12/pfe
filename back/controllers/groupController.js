@@ -98,7 +98,8 @@ const updateGroup = async (req, res) => {
         res.json(updatedGroup);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
+        const message = error.code === 11000 ? 'Group name already exists' : 'Internal server error';
+        res.status(500).json({ message });
     }
 };
 

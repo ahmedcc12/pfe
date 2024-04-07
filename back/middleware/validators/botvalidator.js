@@ -9,16 +9,15 @@ const getAllBotsValidationRules = () => {
 }
 
 const BotValidationRules = () => {
-    const statusOptions = ['active', 'inactive'];
     return [
-        check('newName').trim().escape().escape().notEmpty().withMessage('Name is required').isLength({ min: 3, max: 10 }).withMessage('Name must be at least 3 characters long and at most 10 characters long'),
+        check('name').trim().escape().escape().notEmpty().withMessage('Name is required').isLength({ min: 3, max: 10 }).withMessage('Name must be at least 3 characters long and at most 10 characters long'),
         check('description').trim().escape().notEmpty().withMessage('Description is required').isLength({ min: 4, max: 50 }).withMessage('Description must be at least 4 characters long and at most 50 characters long'),
     ];
 };
 
 const paramBotValidationRules = () => {
     return [
-        param('name').trim().escape().notEmpty().withMessage('Name is required'),
+        param('id').trim().escape().notEmpty().withMessage('botId is required'),
     ];
 }
 

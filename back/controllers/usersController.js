@@ -41,7 +41,8 @@ const getAllUsers = async (req, res) => {
         const options = {
             page,
             limit,
-            populate: 'group'
+            populate: 'group',
+            sort: { role: 1, matricule: 1 }
         };
 
         const users = await User.paginate(query, options);
@@ -64,20 +65,24 @@ const getAllUsers = async (req, res) => {
 
 
 const deleteUser = async (req, res) => {
-    if (!req?.params?.matricule) return res.status(400).json({ "message": 'User ID required' });
-    const user = await User.findOne({ matricule: req.params.matricule }).exec();
-    if (!user) {
-        return res.status(404).json({ 'message': `User ID ${req.params.matricule} not found` });
+    if (!req?.params?.id) return res.status(400).json({ "message": 'User ID required' });
+    try {
+        const deleteUser = await User.findByIdAndDelete(req.params.id).exec();
+        if (!deleteUser) {
+            return res.status(404).json({ 'message': `User with ID ${req.params.id} not found` });
+        }
+        res.status(200).json({ 'success': `User ${deleteUser.matricule} was deleted!` });
     }
-    const result = await user.deleteOne({ matricule: req.params.matricule });
-    res.json(result);
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ 'message': 'Internal server error' });
+    }
 }
 
 const getUser = async (req, res) => {
-    if (!req?.params?.matricule) return res.status(400).json({ "message": 'User ID required' });
-    console.log("fetching user ...")
+    if (!req?.params?.id) return res.status(400).json({ "message": 'User ID required' });
     try {
-        const user = await User.findOne({ matricule: req.params.matricule }).populate('group').exec();
+        const user = await User.findById(req.params.id).populate('group').exec();
         if (!user) {
             console.log('User not found');
             return res.status(404).json({ error: 'User not found' });
@@ -92,58 +97,37 @@ const getUser = async (req, res) => {
 
 
 const updateUser = async (req, res) => {
-    if (!req.params?.matricule) return res.status(400).json({ "message": 'User ID required' });
+    if (!req.params?.id) return res.status(400).json({ "message": 'User ID required' });
 
-    const { newMatricule, email, firstname, lastname, department, role, group } = req.body;
-
-    if (!newMatricule || !email || !firstname || !lastname || !department || !role || !group) {
-        return res.status(400).json({ 'message': 'Missing required fields.' });
-    }
-
-    if (!validator.validate(email)) {
-        return res.status(400).json({ 'message': 'Invalid email' });
-    }
+    const { matricule, email, firstname, lastname, department, role, group } = req.body;
 
     try {
-
-        const existingUser = await User.findOne({ matricule: req.params.matricule }).exec();
-
-        if (!existingUser) {
-            return res.status(404).json({ 'message': `User with ID ${matricule} not found` });
+        const user = await User.findByIdAndUpdate(req.params.id, {
+            matricule,
+            email,
+            firstname,
+            lastname,
+            department,
+            role,
+            group
+        }, { new: true }).exec();
+        if (!user) {
+            return res.status(404).json({ 'message': `User with ID ${req.params.id} not found` });
         }
+        res.json(user);
 
-        const emailChanged = existingUser.email !== email;
-        const matriculeChanged = existingUser.matricule !== newMatricule;
-
-        if (emailChanged) {
-            const duplicateEmail = await User.findOne({ email });
-            if (duplicateEmail) {
-                return res.status(409).json({ 'message': 'Email already in use' });
-            }
-        }
-
-        if (matriculeChanged) {
-            const duplicateMatricule = await User.findOne({ matricule: newMatricule });
-            if (duplicateMatricule) {
-                return res.status(409).json({ 'message': 'Matricule already in use' });
-            }
-        }
-
-        //const access = selectedBots.map(bot => bot.value);
-
-
-        existingUser.matricule = newMatricule;
-        existingUser.email = email;
-        existingUser.firstname = firstname;
-        existingUser.lastname = lastname;
-        existingUser.department = department;
-        existingUser.role = role;
-        existingUser.group = group;
-
-        const updatedUser = await existingUser.save();
-        res.status(200).json({ 'success': `User ${updatedUser.matricule} was updated!` });
     } catch (err) {
-        res.status(500).json({ 'message': err.message });
+        let message;
+        if (err) {
+            if (err.name === 'ValidationError') {
+                console.error(Object.values(err.errors).map(val => val.message))
+            }
+            if (err.code === 11000) {
+                console.error('Duplicate key error');
+                message = Object.keys(err.keyValue).map(val => `${val} is already taken`);
+            }
+        }
+        res.status(500).json({ 'message': message });
     }
 };
 

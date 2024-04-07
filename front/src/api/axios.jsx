@@ -1,8 +1,6 @@
 import axios from 'axios';
 const BASE_URL = 'http://localhost:9000/api';
 
-export const CancelToken = axios.CancelToken;
-
 export default axios.create({
     baseURL: BASE_URL,
 });

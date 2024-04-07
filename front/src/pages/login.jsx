@@ -29,7 +29,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const response = await axios.post("/auth",
-        JSON.stringify({ email, pwd }),
+        JSON.stringify({ email, pwd, recaptchaToken: captcha }),
         {
           headers: { 'Content-Type': 'application/json' },
           withCredentials: true

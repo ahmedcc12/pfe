@@ -7,8 +7,8 @@ import { faDownload } from '@fortawesome/free-solid-svg-icons';
 import { TailSpin } from 'react-loader-spinner';
 import Swal from 'sweetalert2';
 export default function AddBot() {
-  const { name } = useParams();
-  const [newName, setNewname] = useState('');
+  const { botId } = useParams();
+  const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [file, setFile] = useState(null);
   const [downloadURL, setDownloadURL] = useState('');
@@ -29,13 +29,14 @@ export default function AddBot() {
   }, []);
 
   useEffect(() => {
-    if (!name)
+    if (!botId)
       return;
 
     const fetchBot = async () => {
       try {
-        const { data } = await axiosPrivate.get(`/bots/${name}`, { signal: abortController.signal });
-        setNewname(data.name);
+        console.log(botId)
+        const { data } = await axiosPrivate.get(`/bots/${botId}`, { signal: abortController.signal });
+        setName(data.name);
         setDescription(data.description);
         if (data?.configuration?.downloadURL)
           setDownloadURL(data?.configuration?.downloadURL);
@@ -45,25 +46,25 @@ export default function AddBot() {
       }
     }
     fetchBot();
-  }, [name]);
+  }, [botId]);
 
   async function addBot(ev) {
     ev.preventDefault();
 
     const formData = new FormData();
-    formData.append('newName', newName);
+    formData.append('name', name);
     formData.append('description', description);
     formData.append('file', file);
 
     try {
-      if (name) {
+      if (botId) {
         Swal.fire({
           title: "Updating bot...",
           allowOutsideClick: false,
           allowEscapeKey: false,
         });
         Swal.showLoading();
-        await axiosPrivate.put(`/bots/${name}`, formData,
+        await axiosPrivate.put(`/bots/${botId}`, formData,
           { headers: { 'Content-Type': 'multipart/form-data' } }
         );
         Swal.fire({
@@ -93,6 +94,7 @@ export default function AddBot() {
         });
       }
     } catch (err) {
+      Swal.close();
       console.error("Error registering bot", err);
       const errorMessage = err.response?.data?.message || "An error occurred";
       setErrMsg(errorMessage);
@@ -106,15 +108,15 @@ export default function AddBot() {
       ) : (
         <div className="mt-4 grow flex items-center justify-around">
           <div className="mb-64">
-            <h1 className="text-4xl text-center mb-4">{name ? <p>Edit bot</p> : <p>Add bot</p>}</h1>
+            <h1 className="text-4xl text-center mb-4">{botId ? <p>Edit bot</p> : <p>Add bot</p>}</h1>
             <form className="max-w-md mx-auto" onSubmit={addBot}>
               <input
                 required
                 type="text"
                 maxLength={10}
                 placeholder="name"
-                value={newName}
-                onChange={(ev) => setNewname(ev.target.value)}
+                value={name}
+                onChange={(ev) => setName(ev.target.value)}
               />
               <input
                 maxLength={50}
@@ -130,10 +132,10 @@ export default function AddBot() {
                     <FontAwesomeIcon icon={faDownload} />
                   </a>
                 )}
-                <input type="file" required={name ? false : true} onChange={(ev) => setFile(ev.target.files[0])}
+                <input type="file" required={botId ? false : true} onChange={(ev) => setFile(ev.target.files[0])}
                   className="w-full text-black text-sm bg-white border file:cursor-pointer cursor-pointer file:border-0 file:py-2.5 file:px-4 file:bg-gray-100 file:hover:bg-gray-200 file:text-black rounded" />
               </div>
-              {name ? (
+              {botId ? (
                 <button disabled={loading} className="primary">Update Bot</button>
               ) : (
                 <button disabled={loading} className="primary">add bot</button>
@@ -145,7 +147,7 @@ export default function AddBot() {
                 </div>
               )}
 
-              {errMsg && <div className="error">{errMsg}</div>}
+              {errMsg && <div className="text-red-500">{errMsg}</div>}
             </form>
           </div>
         </div>

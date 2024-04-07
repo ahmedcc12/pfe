@@ -22,7 +22,7 @@ import AddBot from './pages/addBot'
 import CreateGroup from './pages/createGroup'
 
 function App() {
-  const location = useLocation(); // Get current location
+  const location = useLocation();
 
   return (
     <div>
@@ -64,9 +64,9 @@ function App() {
           <Route element={<RequireAuth allowedRoles={["admin"]} />} >
             <Route path="/admin" element={<Admin />} />
             <Route path="/admin/user/register" element={<Register />} />
-            <Route path="/admin/user/edit/:matricule" element={<Register />} />
+            <Route path="/admin/user/edit/:userId" element={<Register />} />
             <Route path="/admin/bot/add" element={<AddBot />} />
-            <Route path="/admin/bot/edit/:name" element={<AddBot />} />
+            <Route path="/admin/bot/edit/:botId" element={<AddBot />} />
             <Route path="/admin/group/createGroup" element={<CreateGroup />} />
             <Route path="/admin/group/editGroup/:groupId" element={<CreateGroup />} />
 

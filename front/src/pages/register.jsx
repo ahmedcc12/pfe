@@ -7,8 +7,8 @@ import { TailSpin } from 'react-loader-spinner';
 import Swal from 'sweetalert2';
 
 export default function RegisterPage() {
-  const { matricule } = useParams();
-  const [newMatricule, setNewMatricule] = useState('');
+  const { userId } = useParams();
+  const [matricule, setMatricule] = useState('');
   const [firstname, setFirstname] = useState('');
   const [lastname, setLastname] = useState('');
   const [department, setDepartment] = useState('');
@@ -35,17 +35,17 @@ export default function RegisterPage() {
 
 
   useEffect(() => {
-    if (!matricule)
+    if (!userId)
       return;
 
     const fetchUser = async () => {
       try {
-        console.log("fetching user with id ", matricule)
-        const { data } = await axiosPrivate.get(`/users/${matricule}`, { signal: abortController.signal });
+        console.log("fetching user with id ", userId)
+        const { data } = await axiosPrivate.get(`/users/${userId}`, { signal: abortController.signal });
         setFirstname(data.firstname);
         setLastname(data.lastname);
         setDepartment(data.department);
-        setNewMatricule(data.matricule);
+        setMatricule(data.matricule);
         setEmail(data.email);
         setRole(data.role);
         setGroup({
@@ -60,7 +60,7 @@ export default function RegisterPage() {
       }
     }
     fetchUser();
-  }, [matricule]);
+  }, [userId]);
 
   useEffect(() => {
     setErrMsg('');
@@ -80,15 +80,15 @@ export default function RegisterPage() {
         return;
       }
 
-      if (matricule) {
+      if (userId) {
         Swal.fire({
           title: "Updating user...",
           allowOutsideClick: false,
           allowEscapeKey: false,
         });
         Swal.showLoading();
-        await axiosPrivate.put(`/users/${matricule}`, {
-          newMatricule,
+        await axiosPrivate.put(`/users/${userId}`, {
+          matricule,
           email,
           firstname,
           lastname,
@@ -112,7 +112,7 @@ export default function RegisterPage() {
         });
         Swal.showLoading();
         await axiosPrivate.post("/register", {
-          newMatricule,
+          matricule,
           email,
           firstname,
           lastname,
@@ -130,6 +130,7 @@ export default function RegisterPage() {
         });
       }
     } catch (err) {
+      Swal.close();
       console.error("Error registering user", err);
       const errorMessage = err.response?.data?.message || "An error occurred";
       setErrMsg(errorMessage);
@@ -163,14 +164,14 @@ export default function RegisterPage() {
       ) : (
         <div className="mt-4 grow flex items-center justify-around">
           <div className="mb-64">
-            <h1 className="text-4xl text-center mb-4">{matricule ? <>Edit</> : <>Register</>}</h1>
+            <h1 className="text-4xl text-center mb-4">{userId ? <>Edit</> : <>Register</>}</h1>
             <form className="max-w-md mx-auto" onSubmit={registerUser}>
               <input
                 required
                 type="text"
                 placeholder="matricule"
-                value={newMatricule}
-                onChange={(ev) => setNewMatricule(ev.target.value)}
+                value={matricule}
+                onChange={(ev) => setMatricule(ev.target.value)}
                 maxLength={50}
               />
               <input
@@ -224,7 +225,7 @@ export default function RegisterPage() {
               />
 
 
-              {matricule ? (
+              {userId ? (
                 <button disabled={loading} className="primary">Update User</button>
               ) : (
                 <button disabled={loading} className="primary">Sign Up</button>
@@ -237,7 +238,7 @@ export default function RegisterPage() {
               )}
 
 
-              {errMsg && <div className="error">{errMsg}</div>}
+              {errMsg && <div className="text-red-500">{errMsg}</div>}
             </form>
           </div>
         </div>

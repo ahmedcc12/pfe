@@ -213,7 +213,6 @@ const scheduleBot = async (req, res) => {
             botInstance.isScheduled = false;
             botInstance.StartedAt = Date.now();
             await botInstance.save();
-            //send notification to use
             const message = `${botExists.name} has been started`;
             const notification = new Notification({
                 user,
@@ -222,15 +221,7 @@ const scheduleBot = async (req, res) => {
             if (notification) {
                 global.io.emit('newNotification', { userId: user });
                 global.io.emit('botStarted', { userId: user, botId: bot });
-                //create 100 notifications
-                for (let i = 0; i < 100; i++) {
-                    const result = await Notification.create(
-                        {
-                            user,
-                            message: message + i.toString()
-                        }
-                    );
-                }
+                await notification.save();
             }
         });
         res.json(result);

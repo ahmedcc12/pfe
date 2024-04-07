@@ -5,7 +5,15 @@ const mailerConfig = require('../config/mailerConfig');
 require('dotenv').config();
 
 const handleLogin = async (req, res) => {
-    const { email, pwd } = req.body;
+    const { email, pwd, recaptchaToken } = req.body;
+
+    if (!recaptchaToken) return res.status(400).json({ 'message': 'Validate recaptcha' });
+
+    const url = `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${recaptchaToken}`;
+    const response = await fetch(url, { method: 'POST' });
+    const recaptcha = await response.json();
+    if (!recaptcha.success) return res.status(400).json({ 'message': 'Recaptcha failed' });
+
     if (!email || !pwd) return res.status(400).json({ 'message': 'email and password are required.' });
 
     const foundUser = await User.findOne({ email: email }).exec();

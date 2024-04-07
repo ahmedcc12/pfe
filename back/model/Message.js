@@ -1,9 +1,15 @@
 const mongoose = require('mongoose');
 const mongoosePaginate = require('mongoose-paginate-v2');
+
 const { Schema } = mongoose;
 
-const notificationSchema = new Schema({
-    user: {
+const messageSchema = new Schema({
+    sender: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
+    receiver: {
         type: Schema.Types.ObjectId,
         ref: 'User',
         required: true
@@ -16,11 +22,10 @@ const notificationSchema = new Schema({
         type: Boolean,
         default: false
     },
-    readAt: Date,
-
-
+    readAt: Date
 }, { timestamps: true });
 
-notificationSchema.plugin(mongoosePaginate);
+messageSchema.plugin(mongoosePaginate);
 
-module.exports = mongoose.model('Notification', notificationSchema);
+module.exports = mongoose.model('Message', messageSchema);
+

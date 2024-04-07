@@ -6,14 +6,10 @@ import axios from "../api/axios";
 
 export default function ProfileModal({ onClose, user, isOpen }) {
 
-  useEffect(() => {
-    console.log("PROFILE");
 
-  }, []);
   if (!user) {
     return null;
   }
-
 
 
   const sendResetPasswordEmail = async (email) => {

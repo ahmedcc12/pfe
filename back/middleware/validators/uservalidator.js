@@ -10,7 +10,7 @@ const getAllUsersValidationRules = () => {
 
 const UserValidationRules = () => {
     return [
-        check('newMatricule').trim().escape().notEmpty().withMessage('Matricule is required').isLength({ min: 4, max: 50 }).withMessage('Matricule must be at least 4 characters long'),
+        check('matricule').trim().escape().notEmpty().withMessage('Matricule is required').isLength({ min: 4, max: 50 }).withMessage('Matricule must be at least 4 characters long'),
         check('email').trim().escape().normalizeEmail().notEmpty().withMessage('Email is required').isEmail().withMessage('Invalid email format').isLength({ max: 254 }).withMessage('Email is too long'),
         check('firstname').trim().escape().notEmpty().withMessage('Firstname is required').isAlpha().withMessage('Firstname must contain only letters').isLength({ min: 3, max: 20 }).withMessage('Firstname must be 3 to 20 characters long'),
         check('lastname').trim().escape().notEmpty().withMessage('Lastname is required').isAlpha().withMessage('Firstname must contain only letters').isLength({ min: 3, max: 20 }).withMessage('Lastname must be 3 to 20 characters long'),
@@ -23,7 +23,7 @@ const UserValidationRules = () => {
 // Validation rules for deleting a user
 const paramUserValidationRules = () => {
     return [
-        check('matricule').trim().escape().notEmpty().withMessage('Matricule is required'),
+        check('id').trim().escape().notEmpty().withMessage('Matricule is required'),
     ];
 };
 

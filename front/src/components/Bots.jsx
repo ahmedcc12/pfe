@@ -91,7 +91,7 @@ const Bots = () => {
         fetchData();
     }, [currentPage]);
 
-    const deleteBot = async (name) => {
+    const deleteBot = async (id) => {
         const result = await Swal.fire({
             title: "Are you sure?",
             text: "You will not be able to recover this bot!",
@@ -109,8 +109,8 @@ const Bots = () => {
                     allowEscapeKey: false,
                 });
                 Swal.showLoading();
-                await axiosPrivate.delete(`/bots/${name}`, {
-                    cancelToken: source.token,
+                await axiosPrivate.delete(`/bots/${id}`, {
+                    signal: abortController.signal,
                 });
                 Swal.fire("Deleted!", "Bot has been deleted.", "success");
                 await fetchBots(search);
@@ -121,8 +121,8 @@ const Bots = () => {
         }
     };
 
-    const editBot = (name) => {
-        navigate(`/admin/bot/edit/${name}`);
+    const editBot = (id) => {
+        navigate(`/admin/bot/edit/${id}`);
     };
 
     return (
@@ -220,7 +220,7 @@ const Bots = () => {
                                                 scope="col"
                                                 className="text-sm font-bold text-gray-900 px-6 py-4 text-left"
                                             >
-                                                Configuration
+                                                Script
                                             </th>
                                             {auth.role == "admin" ? (
                                                 <th
@@ -269,7 +269,7 @@ const Bots = () => {
                                                                 type="button"
                                                                 title="Delete"
                                                                 className="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900"
-                                                                onClick={() => deleteBot(bot.name)}
+                                                                onClick={() => deleteBot(bot._id)}
                                                             >
                                                                 <FontAwesomeIcon icon={faTrash} />
                                                             </button>
@@ -277,7 +277,7 @@ const Bots = () => {
                                                                 type="button"
                                                                 title="Edit"
                                                                 className="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                                                                onClick={() => editBot(bot.name)}
+                                                                onClick={() => editBot(bot._id)}
                                                             >
                                                                 <FontAwesomeIcon icon={faPencilAlt} />
                                                             </button>

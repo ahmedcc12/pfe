@@ -47,8 +47,7 @@ const getAllBots = async (req, res) => {
 };
 
 const createBot = async (req, res) => {
-    const { newName, description } = req.body;
-    const name = newName;
+    const { name, description } = req.body;
     const file = req.file;
     const status = 'inactive'
     if (!name || !description || !file) {
@@ -58,7 +57,7 @@ const createBot = async (req, res) => {
         const bot = await Bot.findOne({ name }).exec();
         if (bot) return res.status(400).json({ 'message': 'Bot name already exists' });
 
-        const data = await uploadFile(file, "Script");
+        const data = await uploadFile(file, `Script/${name}`);
         const { path, downloadURL } = data;
 
         if (data?.status === 500) return res.status(500).json({ 'message': 'Internal server error' });
@@ -79,22 +78,20 @@ const createBot = async (req, res) => {
 };
 
 const deleteBot = async (req, res) => {
-    if (!req?.params?.name) return res.status(400).json({ "message": 'Bot name required' });
+    if (!req?.params?.id) return res.status(400).json({ "message": 'Bot name required' });
 
     try {
-        const bot = await Bot.findOne({ name: req.params.name }).exec();
-
+        const bot = await Bot.findById(req.params.id).exec();
         if (!bot) {
             return res.status(404).json({ 'message': `Bot name ${req.params.name} not found` });
         }
 
         const filePath = bot.configuration.path;
 
-        const result = await bot.deleteOne({ name: req.params.name });
+        const result = await Bot.findByIdAndDelete(req.params.id).exec();
 
         await deleteFile(filePath);
 
-        //remove bot id from its associated groups
         const groups = await Group.find({ bots: bot._id }).exec();
 
         groups.forEach(async group => {
@@ -111,9 +108,9 @@ const deleteBot = async (req, res) => {
 
 
 const getBot = async (req, res) => {
-    if (!req?.params?.name) return res.status(400).json({ "message": 'Bot name required' });
+    if (!req?.params?.id) return res.status(400).json({ "message": 'Bot Id required' });
     try {
-        const bot = await Bot.findOne({ name: req.params.name }).exec();
+        const bot = await Bot.findById(req.params.id).exec();
         if (!bot) {
             return res.status(404).json({ 'message': `Bot name ${req.params.name} not found` });
         }
@@ -125,30 +122,26 @@ const getBot = async (req, res) => {
 }
 
 const updateBot = async (req, res) => {
-    if (!req?.params?.name) return res.status(400).json({ "message": 'Bot name required' });
-    const name = req.params.name;
-    const bot = await Bot.findOne({ name: req.params.name }).exec();
-    if (!bot) {
-        return res.status(404).json({ 'message': `Bot name ${req.params.name} not found` });
-    }
-    const { newName, description } = req.body;
+    if (!req?.params?.id) return res.status(400).json({ "message": 'Bot name required' });
+
+    const { name, description } = req.body;
     const file = req.file;
 
-    if (!newName || !description) {
+    if (!name || !description) {
         return res.status(400).json({ 'message': 'Missing required fields' });
     }
     try {
-        const existingBot = await Bot.findOne({ name }).exec();
+        const existingBot = await Bot.findById(req.params.id).exec();
         if (!existingBot) {
-            return res.status(404).json({ 'message': `Bot with name ${name} not found` });
+            return res.status(404).json({ 'message': `Bot with name ${existingBot.name} not found` });
         }
-        const namechanged = existingBot.name !== newName;
+        const namechanged = existingBot.name !== name;
         if (namechanged) {
-            const bot = await Bot.findOne({ name: newName }).exec();
-            if (bot) return res.status(400).json({ 'message': `Name ${newName} already exists` });
+            const bot = await Bot.findOne({ name }).exec();
+            if (bot) return res.status(400).json({ 'message': `Name ${name} already exists` });
         }
 
-        existingBot.name = newName;
+        existingBot.name = name;
         existingBot.description = description;
         if (file) {
             if (existingBot.configuration.path) {

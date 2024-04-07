@@ -35,11 +35,14 @@ const handleNewUser = async (req, res) => {
             from: process.env.MAIL,
             to: email,
             subject: "Welcome to the app",
-            text: `Welcome ${firstname} ${lastname}!
-            Your account has been created successfully.
-            Your login credentials are:
-            Email: ${email}
-            Password: ${password}`
+            text:
+                `Hello ${firstname} ${lastname},\n\n` +
+                `You have been added to the app as a ${role}.\n\n` +
+                `Your matricule is: ${matricule}\n` +
+                `Your password is: ${password}\n\n` +
+                `Please login to the app and change your password.\n\n` +
+                `Best regards,\n\n` +
+                `The app team`
         };
 
         mailerConfig.transporter.sendMail(mailOptions, async (err, info) => {

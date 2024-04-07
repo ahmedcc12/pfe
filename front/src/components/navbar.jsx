@@ -17,9 +17,7 @@ export function NavbarDefault() {
   const axiosPrivate = useAxiosPrivate();
   const [showModal, setShowModal] = useState(false);
 
-  useEffect(() => {
-    console.log("auth", auth);
-  }, [auth]);
+
   const signOut = async () => {
     await logout();
   };
@@ -40,7 +38,7 @@ export function NavbarDefault() {
   const openProfileModal = async () => {
     setModalIsLoading(true);
     try {
-      const { data: user } = await axiosPrivate.get(`/users/${auth.matricule}`);
+      const { data: user } = await axiosPrivate.get(`/users/${auth.userId}`);
       setModalIsLoading(false);
       openModal(user);
     } catch (err) {

@@ -15,7 +15,7 @@ router.route('/')
         usersController.getAllUsers
     )
 
-router.route('/:matricule')
+router.route('/:id')
     .get(
         paramUserValidationRules(),
         validate,

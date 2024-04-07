@@ -9,8 +9,6 @@ import { TailSpin } from "react-loader-spinner";
 import { io } from "socket.io-client";
 import { Pagination } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { ClickAwayListener } from '@mui/base/ClickAwayListener';
-
 
 const NotificationBell = () => {
     const [anchorEl, setAnchorEl] = useState(null);
@@ -58,7 +56,7 @@ const NotificationBell = () => {
 
     const fetchNotifications = async () => {
         try {
-            const response = await axiosPrivate.get(`/notifications/${auth.userId}/?page=${currentPage}&limit=5`,
+            const response = await axiosPrivate.get(`/notifications/${auth.userId}/?page=${currentPage}&limit=4`,
                 { signal: abortController.signal }
             );
             const unread = response.data.notifications.filter((notification) => !notification.read).length;
@@ -150,6 +148,7 @@ const NotificationBell = () => {
                     vertical: 'top',
                     horizontal: 'right',
                 }}
+                sx={{ marginTop: '40px' }}
             >
 
                 <div className='mb-4'>
@@ -181,15 +180,30 @@ const NotificationBell = () => {
                                 <hr className="my-2" />
                                 {notifications.map((notification) => (
                                     <div key={notification._id}>
-                                        <MenuItem disableRipple onClick={() => handleNotificationClick(notification)} >
-                                            <div style={{ color: notification.read ? 'grey' : 'Blue', maxWidth: '10%' }} >
-                                                <span className='ps-6'>{notification.message}</span>
-                                                <span className='ps-6'>{timeDifference(notification.createdAt)}</span>
-                                                <Button onClick={() => handleDeleteNotification(notification._id)} disableFocusRipple>
-                                                    <FontAwesomeIcon icon={faTrash} size="sm" color='Black' className='ps-6' />
+                                        <MenuItem onClick={() => handleNotificationClick(notification)}>
+                                            <div className="notification-content">
+                                                <div className="notification-message" style={{ color: notification.read ? 'grey' : 'Blue' }}>
+                                                    <div style={{
+                                                        whiteSpace: 'nowrap',
+                                                        overflow: 'hidden',
+                                                        textOverflow: 'ellipsis'
+                                                    }}>
+                                                        {notification.message}
+                                                    </div>
+                                                    <small>
+                                                        {timeDifference(notification.createdAt)}
+                                                    </small>
+                                                </div>
+                                                <Button
+                                                    onClick={() => handleDeleteNotification(notification._id)}
+                                                    style={{ position: 'absolute', bottom: 0, right: 0 }}
+                                                    disableRipple
+                                                >
+                                                    <FontAwesomeIcon icon={faTrash} size="sm" color='Black' />
                                                 </Button>
                                             </div>
                                         </MenuItem>
+
                                         <hr className="my-2" />
                                     </div>
                                 ))}

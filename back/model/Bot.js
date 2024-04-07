@@ -24,24 +24,6 @@ const botSchema = new Schema({
             required: true,
         }
     },
-    /*logs: [{
-        timestamp: {
-            type: Date,
-            default: Date.now
-        },
-        status: String,
-        message: String
-    }],
-    lastRun: Date,
-    nextRun: Date,
-    schedule: {
-        type: String,
-        required: false
-    },
-    isScheduled: {
-        type: Boolean,
-        default: false
-    }*/
 });
 
 botSchema.plugin(mongoosePaginate);

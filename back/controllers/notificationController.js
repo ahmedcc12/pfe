@@ -1,4 +1,5 @@
 const Notification = require('../model/Notification');
+const schedule = require('node-schedule');
 
 const createNotification = async (req, res) => {
     try {
@@ -6,7 +7,6 @@ const createNotification = async (req, res) => {
             user: req.body.user,
             message: req.body.message
         });
-        //create 100 notifications for testing
         await notification.save();
         res.status(201).send(notification);
     } catch (error) {
@@ -101,6 +101,18 @@ const clearNotifications = async (req, res) => {
     }
 }
 
+const deleteJob = schedule.scheduleJob('0 0 * * *', async () => {
+    try {
+        const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
+        const result = await Notification.deleteMany({ read: true, readAt: { $lt: threeDaysAgo } });
+        console.log(result.deletedCount + ' notifications deleted');
+    } catch (error) {
+        console.error(error);
+    }
+});
+
+
+
 module.exports = {
     createNotification,
     getAllNotifications,
@@ -108,5 +120,6 @@ module.exports = {
     getNotificationsByUser,
     getUnreadNotificationsByUser,
     deleteNotification,
-    clearNotifications
+    clearNotifications,
+    deleteJob
 }

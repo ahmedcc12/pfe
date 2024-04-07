@@ -79,6 +79,7 @@ export default function CreateGroup() {
                     setSuccess(true);
                 });
             } catch (error) {
+                Swal.close();
                 console.error("Error updating group", error);
                 setErrMsg(error.response.data.message);
             }
@@ -104,6 +105,7 @@ export default function CreateGroup() {
                 setSuccess(true);
             });
         } catch (error) {
+            Swal.close();
             console.error("Error creating group", error);
             setErrMsg(error.response.data.message);
         }
@@ -170,7 +172,7 @@ export default function CreateGroup() {
                                 </div>
                             )}
 
-                            {errMsg && <div className="error">{errMsg}</div>}
+                            {errMsg && <div className="text-red-500">{errMsg}</div>}
                         </form>
                     </div>
                 </div>

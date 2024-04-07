@@ -80,3 +80,16 @@
 .swal2-shown {
   overflow: hidden;
 }
+
+.notification-content {
+  position: relative;
+  overflow: hidden;
+  display: block;
+  justify-content: space-between;
+  width: 300px;
+  max-width: 100%;
+}
+
+.notification-message {
+  max-width: calc(100% - 20px);
+}
