@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
-import useAxiosPrivate from "../hooks/useAxiosPrivate";
-import { useNavigate, useParams } from "react-router-dom";
-import useAuth from "../hooks/useAuth";
+import { useState, useEffect } from 'react';
+import useAxiosPrivate from '../hooks/useAxiosPrivate';
+import { useNavigate, useParams } from 'react-router-dom';
+import useAuth from '../hooks/useAuth';
 import Select from 'react-select';
 import { TailSpin } from 'react-loader-spinner';
 import Swal from 'sweetalert2';
@@ -18,7 +18,7 @@ export default function RegisterPage() {
   const [group, setGroup] = useState('');
   const [allGroups, setAllGroups] = useState([]);
   const { auth } = useAuth();
-  const userrole = auth.role;
+  const userrole = auth.user.role;
   const [errMsg, setErrMsg] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -32,16 +32,15 @@ export default function RegisterPage() {
     };
   }, []);
 
-
-
   useEffect(() => {
-    if (!userId)
-      return;
+    if (!userId) return;
 
     const fetchUser = async () => {
       try {
-        console.log("fetching user with id ", userId)
-        const { data } = await axiosPrivate.get(`/users/${userId}`, { signal: abortController.signal });
+        console.log('fetching user with id ', userId);
+        const { data } = await axiosPrivate.get(`/users/${userId}`, {
+          signal: abortController.signal,
+        });
         setFirstname(data.firstname);
         setLastname(data.lastname);
         setDepartment(data.department);
@@ -50,21 +49,20 @@ export default function RegisterPage() {
         setRole(data.role);
         setGroup({
           label: data.group.name,
-          value: data.group._id
+          value: data.group._id,
         });
-
       } catch (error) {
-        console.error("Error fetching user", error);
+        console.error('Error fetching user', error);
         //redirect user to /missing route
         Navigate('/missing');
       }
-    }
+    };
     fetchUser();
   }, [userId]);
 
   useEffect(() => {
     setErrMsg('');
-  }, [email])
+  }, [email]);
 
   const validateEmail = (email) => {
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -76,13 +74,13 @@ export default function RegisterPage() {
 
     try {
       if (!validateEmail(email)) {
-        setErrMsg("Please enter a valid email address");
+        setErrMsg('Please enter a valid email address');
         return;
       }
 
       if (userId) {
         Swal.fire({
-          title: "Updating user...",
+          title: 'Updating user...',
           allowOutsideClick: false,
           allowEscapeKey: false,
         });
@@ -95,23 +93,23 @@ export default function RegisterPage() {
           department,
           role,
           userrole,
-          group: group.value
+          group: group.value,
         });
         Swal.fire({
-          title: "User updated",
-          icon: "success",
-          confirmButtonText: "Ok",
+          title: 'User updated',
+          icon: 'success',
+          confirmButtonText: 'Ok',
         }).then(() => {
           setSuccess(true);
         });
       } else {
         Swal.fire({
-          title: "Registering user...",
+          title: 'Registering user...',
           allowOutsideClick: false,
           allowEscapeKey: false,
         });
         Swal.showLoading();
-        await axiosPrivate.post("/register", {
+        await axiosPrivate.post('/register', {
           matricule,
           email,
           firstname,
@@ -119,20 +117,20 @@ export default function RegisterPage() {
           department,
           role,
           userrole,
-          group: group.value
+          group: group.value,
         });
         Swal.fire({
-          title: "User registered",
-          icon: "success",
-          confirmButtonText: "Ok",
+          title: 'User registered',
+          icon: 'success',
+          confirmButtonText: 'Ok',
         }).then(() => {
           setSuccess(true);
         });
       }
     } catch (err) {
       Swal.close();
-      console.error("Error registering user", err);
-      const errorMessage = err.response?.data?.message || "An error occurred";
+      console.error('Error registering user', err);
+      const errorMessage = err.response?.data?.message || 'An error occurred';
       setErrMsg(errorMessage);
     }
   }
@@ -140,27 +138,27 @@ export default function RegisterPage() {
   useEffect(() => {
     const fetchGroups = async () => {
       try {
-        const { data } = await axiosPrivate.get("/groups", { signal: abortController.signal });
-        console.log("data", data);
+        const { data } = await axiosPrivate.get('/groups', { signal: abortController.signal });
+        console.log('data', data);
         setAllGroups(data.groups);
       } catch (error) {
-        console.error("Error fetching groups", error);
+        console.error('Error fetching groups', error);
       }
-    }
+    };
     fetchGroups();
   }, []);
 
-  const groupOptions = allGroups.map(group => {
+  const groupOptions = allGroups.map((group) => {
     return {
       label: group.name,
-      value: group._id
+      value: group._id,
     };
   });
 
   return (
     <div>
       {success ? (
-        Navigate("/admin")
+        Navigate('/admin')
       ) : (
         <div className="mt-4 grow flex items-center justify-around">
           <div className="mb-64">
@@ -206,10 +204,7 @@ export default function RegisterPage() {
                 onChange={(ev) => setDepartment(ev.target.value)}
                 maxLength={50}
               />
-              <select
-                value={role || "user"}
-                onChange={(ev) => setRole(ev.target.value)}
-              >
+              <select value={role || 'user'} onChange={(ev) => setRole(ev.target.value)}>
                 <option value="user">User</option>
                 <option value="admin">Admin</option>
               </select>
@@ -221,14 +216,17 @@ export default function RegisterPage() {
                 placeholder="Select group"
                 required
                 isLoading={!allGroups.length}
-                loadingMessage={() => "Loading groups..."}
+                loadingMessage={() => 'Loading groups...'}
               />
 
-
               {userId ? (
-                <button disabled={loading} className="primary">Update User</button>
+                <button disabled={loading} className="primary">
+                  Update User
+                </button>
               ) : (
-                <button disabled={loading} className="primary">Sign Up</button>
+                <button disabled={loading} className="primary">
+                  Sign Up
+                </button>
               )}
 
               {loading && (
@@ -236,7 +234,6 @@ export default function RegisterPage() {
                   <TailSpin color="#3B82F6" height={50} width={50} />
                 </div>
               )}
-
 
               {errMsg && <div className="text-red-500">{errMsg}</div>}
             </form>

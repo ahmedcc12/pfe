@@ -1,0 +1,36 @@
+/* scrollbar */
+@import 'simplebar-react/dist/simplebar.min.css';
+
+.swal-z-index {
+  z-index: 2000 !important; /* Or any number higher than the modal's z-index */
+}
+
+.swal-dark-theme {
+  background-color: #333;
+  color: #fff;
+}
+
+.swal-dark-theme .swal2-popup {
+  background-color: #444;
+}
+
+.swal-dark-theme .swal2-title {
+  color: #ddd;
+}
+
+.swal-dark-theme .swal2-content {
+  color: white !important;
+}
+
+.swal-dark-theme .swal2-html-container {
+  color: white !important;
+}
+
+.swal-dark-theme .swal-dark-theme .swal2-styled {
+  background-color: #555;
+  color: #ddd;
+}
+
+.swal-dark-theme .swal2-styled:hover {
+  background-color: #666;
+}

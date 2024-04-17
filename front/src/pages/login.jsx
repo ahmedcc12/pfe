@@ -1,15 +1,14 @@
-import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import useAuth from "../hooks/useAuth";
-import axios from "../api/axios";
-import { Link } from "react-router-dom";
-import ReCAPATCHA from "react-google-recaptcha";
+import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import useAuth from '../hooks/useAuth';
+import axios from '../api/axios';
+import { Link } from 'react-router-dom';
+import ReCAPATCHA from 'react-google-recaptcha';
 import { TailSpin } from 'react-loader-spinner';
 
-
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [pwd, setpwd] = useState("");
+  const [email, setEmail] = useState('');
+  const [pwd, setpwd] = useState('');
   const [redirect, setRedirect] = useState(false);
   const navigate = useNavigate();
   const { auth, setAuth, persist, setPersist } = useAuth();
@@ -17,58 +16,50 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [captcha, setCaptcha] = useState(null);
 
-
-
   useEffect(() => {
     setError('');
-  }, [email, pwd])
-
+  }, [email, pwd]);
 
   async function handleLoginSubmit(ev) {
     ev.preventDefault();
     setLoading(true);
     try {
-      const response = await axios.post("/auth",
+      const response = await axios.post(
+        '/auth',
         JSON.stringify({ email, pwd, recaptchaToken: captcha }),
         {
           headers: { 'Content-Type': 'application/json' },
-          withCredentials: true
+          withCredentials: true,
         }
       );
       if (response.status === 200) {
         const accessToken = response?.data?.accessToken;
-        const role = response?.data?.role;
-        const matricule = response?.data?.matricule;
-        const group = response?.data?.group;
-        const userId = response?.data?.userId;
+        const user = response?.data?.user;
 
-        setAuth({ matricule, accessToken, role, group, userId });
+        setAuth({ accessToken, user });
         console.log('auth', auth);
-
       }
-    }
-    catch (err) {
+    } catch (err) {
       console.log(err);
-      setError(err.response?.data?.message || "An error occurred");
+      setError(err.response?.data?.message || 'An error occurred');
     }
     setLoading(false);
 
-    console.log('Loading:', loading, 'Error:', error)
-
+    console.log('Loading:', loading, 'Error:', error);
   }
 
   const togglePersist = () => {
-    setPersist(prev => !prev);
-  }
+    setPersist((prev) => !prev);
+  };
 
   useEffect(() => {
     localStorage.setItem('persist', persist);
-  }, [persist])
+  }, [persist]);
 
   return (
     <div>
       {redirect ? (
-        <Navigate to={"/"} />
+        <Navigate to={'/'} />
       ) : (
         <div className="flex items-center justify-center h-screen">
           <div className="mb-64">
@@ -82,7 +73,11 @@ export default function LoginPage() {
                 required
                 maxLength={254}
               />
-              <input id="Password" name="Password" type="Password" className="w-full py-3 border border-slate-200 rounded-lg px-3 focus:outline-none focus:border-slate-500 hover:shadow"
+              <input
+                id="Password"
+                name="Password"
+                type="Password"
+                className="w-full py-3 border border-slate-200 rounded-lg px-3 focus:outline-none focus:border-slate-500 hover:shadow"
                 placeholder="Password"
                 value={pwd}
                 onChange={(ev) => setpwd(ev.target.value)}
@@ -91,18 +86,13 @@ export default function LoginPage() {
               />
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="persist"
-                    checked={persist}
-                    onChange={togglePersist}
-                  />
+                  <input type="checkbox" id="persist" checked={persist} onChange={togglePersist} />
                   <label htmlFor="persist" className="ml-2">
                     Remember Me
                   </label>
                 </div>
                 <div className="text-center py-2 text-gray-500">
-                  <Link className="underline text-black" to={"/forgotpassword"}>
+                  <Link className="underline text-black" to={'/forgotpassword'}>
                     Forgot your password?
                   </Link>
                 </div>
@@ -113,7 +103,9 @@ export default function LoginPage() {
                 onChange={(value) => setCaptcha(value)}
               />
 
-              <button disabled={loading || !captcha} className="primary">Login</button>
+              <button disabled={loading || !captcha} className="primary">
+                Login
+              </button>
               {error && <div className="text-red-500">{error}</div>}
 
               {loading && (

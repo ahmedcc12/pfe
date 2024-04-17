@@ -1,185 +1,202 @@
-const Group = require('../model/Group');
-const Bot = require('../model/Bot');
+const Group = require("../model/Group");
+const Bot = require("../model/Bot");
 
 const createGroup = async (req, res) => {
-    const { name, botIds } = req.body;
+  const { name, botIds } = req.body;
 
-    try {
-        const existingGroup = await Group.findOne({ name });
-        if (existingGroup) {
-            return res.status(400).json({ message: 'Group name already exists' });
-        }
-
-        const group = new Group({
-            name,
-            bots: botIds
-        });
-
-        const savedGroup = await group.save();
-
-        res.json(savedGroup);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
+  try {
+    const existingGroup = await Group.findOne({ name });
+    if (existingGroup) {
+      return res.status(400).json({ message: "Group name already exists" });
     }
+
+    const group = new Group({
+      name,
+      bots: botIds,
+    });
+
+    const savedGroup = await group.save();
+
+    res.json(savedGroup);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 };
 
-
 const getAllGroups = async (req, res) => {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
-    const search = req.query.search || '';
-    const searchOption = req.query.searchOption || 'all';
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 20;
+  const search = req.query.search || "";
+  const searchOption = req.query.searchOption || "all";
+  const order = req.query.order || "asc";
+  const orderBy = req.query.orderBy || "name";
 
-    try {
-        let query = {};
-        if (search !== '') {
-            if (searchOption === 'all') {
-                query = {
-                    $or: [
-                        { name: { $regex: search, $options: 'i' } },
-                    ]
-                };
-            } else {
-                query[searchOption] = { $regex: search, $options: 'i' };
-            }
-        }
-
-        const options = {
-            page,
-            limit,
+  try {
+    let query = {};
+    if (search !== "") {
+      if (searchOption === "all") {
+        query = {
+          $or: [{ name: { $regex: search, $options: "i" } }],
         };
-
-        const groups = await Group.paginate(query, options);
-
-        if (!groups || groups.docs.length === 0) {
-            return res.status(204).json({ message: 'No groups found' });
-        }
-
-        res.json({
-            groups: groups.docs,
-            currentPage: groups.page,
-            totalPages: groups.totalPages
-        });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
+      } else {
+        query[searchOption] = { $regex: search, $options: "i" };
+      }
     }
+
+    const options = {
+      page,
+      limit,
+      sort: { [orderBy]: order },
+    };
+
+    const groups = await Group.paginate(query, options);
+
+    if (!groups || groups.docs.length === 0) {
+      return res.status(204).json({ message: "No groups found" });
+    }
+
+    res.json({
+      groups: groups.docs,
+      currentPage: groups.page,
+      totalPages: groups.totalPages,
+      totalCount: groups.totalDocs,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 };
 
 const getGroup = async (req, res) => {
-    const groupId = req.params.id;
+  const groupId = req.params.id;
 
-    try {
-        const group = await Group.findById(groupId);
+  try {
+    const group = await Group.findById(groupId);
 
-        if (!group) {
-            return res.status(404).json({ message: 'Group not found' });
-        }
-
-        res.json(group);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
+    if (!group) {
+      return res.status(404).json({ message: "Group not found" });
     }
+
+    res.json(group);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 };
 
 const updateGroup = async (req, res) => {
-    const groupId = req.params.id;
-    const { name, botIds } = req.body;
+  const groupId = req.params.id;
+  const { name, botIds } = req.body;
 
-    try {
-        const updatedGroup = await Group.findByIdAndUpdate(groupId, { name, bots: botIds }, { new: true });
+  try {
+    const updatedGroup = await Group.findByIdAndUpdate(
+      groupId,
+      { name, bots: botIds },
+      { new: true }
+    );
 
-        if (!updatedGroup) {
-            return res.status(404).json({ message: 'Group not found' });
-        }
-
-        res.json(updatedGroup);
-    } catch (error) {
-        console.error(error);
-        const message = error.code === 11000 ? 'Group name already exists' : 'Internal server error';
-        res.status(500).json({ message });
+    if (!updatedGroup) {
+      return res.status(404).json({ message: "Group not found" });
     }
+
+    res.json(updatedGroup);
+  } catch (error) {
+    console.error(error);
+    const message =
+      error.code === 11000
+        ? "Group name already exists"
+        : "Internal server error";
+    res.status(500).json({ message });
+  }
 };
 
 const deleteGroup = async (req, res) => {
-    const groupId = req.params.id;
+  const groupId = req.params.id;
 
-    try {
-        const deletedGroup = await Group.findByIdAndDelete(groupId);
+  try {
+    const deletedGroup = await Group.findByIdAndDelete(groupId);
 
-        if (!deletedGroup) {
-            return res.status(404).json({ message: 'Group not found' });
-        }
-
-        res.json({ message: 'Group deleted successfully' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
+    if (!deletedGroup) {
+      return res.status(404).json({ message: "Group not found" });
     }
-};
 
+    res.json({ message: "Group deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 const getBotsByGroup = async (req, res) => {
-    const groupId = req.params.id;
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
-    const search = req.query.search || '';
-    const searchOption = req.query.searchOption || 'all';
+  const groupId = req.params.id;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 20;
+  const search = req.query.search || "";
+  const searchOption = req.query.searchOption || "all";
+  const order = req.query.order || "asc";
+  const orderBy = req.query.orderBy || "name";
 
-    try {
-        const group = await Group.findById(groupId);
-        if (!group) {
-            return res.status(404).json({ message: 'Group not found' });
-        }
-
-        const botIds = group.bots.map(botId => botId.toString());
-
-        let query = { _id: { $in: botIds } };
-        if (search !== '') {
-            if (searchOption === 'all') {
-                query = {
-                    $or: [
-                        { name: { $regex: search, $options: 'i' } },
-                    ]
-                };
-            } else {
-                query[searchOption] = { $regex: search, $options: 'i' };
-            }
-        }
-
-        const options = {
-            page,
-            limit,
-        };
-
-
-        const bots = await Bot.paginate(query, options);
-
-        if (!bots || bots.docs.length === 0) {
-            return res.status(204).json({ message: 'No bots found' });
-        }
-
-
-        res.json({
-            bots: bots.docs,
-            currentPage: bots.page,
-            totalPages: bots.totalPages
-        });
-
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
+  try {
+    const group = await Group.findById(groupId);
+    if (!group) {
+      return res.status(404).json({ message: "Group not found" });
     }
-};
 
+    const botIds = group.bots.map((botId) => botId.toString());
+
+    let query = { _id: { $in: botIds } };
+    if (search !== "") {
+      if (searchOption === "all") {
+        query = {
+          $and: [
+            { _id: { $in: botIds } },
+            {
+              $or: [
+                { name: { $regex: search, $options: "i" } },
+                { description: { $regex: search, $options: "i" } },
+              ],
+            },
+          ],
+        };
+      } else {
+        query = {
+          $and: [
+            { _id: { $in: botIds } },
+            { [searchOption]: { $regex: search, $options: "i" } },
+          ],
+        };
+      }
+    }
+
+    const options = {
+      page,
+      limit,
+      sort: { [orderBy]: order },
+    };
+
+    const bots = await Bot.paginate(query, options);
+
+    if (!bots || bots.docs.length === 0) {
+      return res.status(204).json({ message: "No bots found" });
+    }
+
+    res.json({
+      bots: bots.docs,
+      currentPage: bots.page,
+      totalPages: bots.totalPages,
+      totalCount: bots.totalDocs,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 
 module.exports = {
-    createGroup,
-    getAllGroups,
-    getGroup,
-    updateGroup,
-    deleteGroup,
-    getBotsByGroup
+  createGroup,
+  getAllGroups,
+  getGroup,
+  updateGroup,
+  deleteGroup,
+  getBotsByGroup,
 };

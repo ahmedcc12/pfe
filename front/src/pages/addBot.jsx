@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
-import useAxiosPrivate from "../hooks/useAxiosPrivate";
-import { useNavigate, useParams } from "react-router-dom";
-import useAuth from "../hooks/useAuth";
+import { useState, useEffect } from 'react';
+import useAxiosPrivate from '../hooks/useAxiosPrivate';
+import { useNavigate, useParams } from 'react-router-dom';
+import useAuth from '../hooks/useAuth';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDownload } from '@fortawesome/free-solid-svg-icons';
 import { TailSpin } from 'react-loader-spinner';
@@ -14,7 +14,7 @@ export default function AddBot() {
   const [downloadURL, setDownloadURL] = useState('');
   const axiosPrivate = useAxiosPrivate();
   const { auth } = useAuth();
-  const userrole = auth.role;
+  const userrole = auth.user.role;
   const [errMsg, setErrMsg] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -29,22 +29,22 @@ export default function AddBot() {
   }, []);
 
   useEffect(() => {
-    if (!botId)
-      return;
+    if (!botId) return;
 
     const fetchBot = async () => {
       try {
-        console.log(botId)
-        const { data } = await axiosPrivate.get(`/bots/${botId}`, { signal: abortController.signal });
+        console.log(botId);
+        const { data } = await axiosPrivate.get(`/bots/${botId}`, {
+          signal: abortController.signal,
+        });
         setName(data.name);
         setDescription(data.description);
-        if (data?.configuration?.downloadURL)
-          setDownloadURL(data?.configuration?.downloadURL);
+        if (data?.configuration?.downloadURL) setDownloadURL(data?.configuration?.downloadURL);
       } catch (error) {
-        console.error("Error fetching bot", error);
+        console.error('Error fetching bot', error);
         Navigate('/missing');
       }
-    }
+    };
     fetchBot();
   }, [botId]);
 
@@ -55,48 +55,47 @@ export default function AddBot() {
     formData.append('name', name);
     formData.append('description', description);
     formData.append('file', file);
-
     try {
       if (botId) {
         Swal.fire({
-          title: "Updating bot...",
+          title: 'Updating bot...',
           allowOutsideClick: false,
           allowEscapeKey: false,
         });
         Swal.showLoading();
-        await axiosPrivate.put(`/bots/${botId}`, formData,
-          { headers: { 'Content-Type': 'multipart/form-data' } }
-        );
+        await axiosPrivate.put(`/bots/${botId}`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
         Swal.fire({
-          title: "Bot updated",
-          icon: "success",
-          confirmButtonText: "Ok",
+          title: 'Bot updated',
+          icon: 'success',
+          confirmButtonText: 'Ok',
         }).then(() => {
           setSuccess(true);
         });
       } else {
         Swal.fire({
-          title: "Adding bot...",
+          title: 'Adding bot...',
           allowOutsideClick: false,
           allowEscapeKey: false,
         });
         Swal.showLoading();
 
-        await axiosPrivate.post("/bots", formData,
-          { headers: { 'Content-Type': 'multipart/form-data' } }
-        );
+        await axiosPrivate.post('/bots', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
         Swal.fire({
-          title: "Bot added",
-          icon: "success",
-          confirmButtonText: "Ok",
+          title: 'Bot added',
+          icon: 'success',
+          confirmButtonText: 'Ok',
         }).then(() => {
           setSuccess(true);
         });
       }
     } catch (err) {
       Swal.close();
-      console.error("Error registering bot", err);
-      const errorMessage = err.response?.data?.message || "An error occurred";
+      console.error('Error registering bot', err);
+      const errorMessage = err.response?.data?.message || 'An error occurred';
       setErrMsg(errorMessage);
     }
   }
@@ -104,11 +103,13 @@ export default function AddBot() {
   return (
     <div>
       {success ? (
-        Navigate("/admin")
+        Navigate('/admin')
       ) : (
         <div className="mt-4 grow flex items-center justify-around">
           <div className="mb-64">
-            <h1 className="text-4xl text-center mb-4">{botId ? <p>Edit bot</p> : <p>Add bot</p>}</h1>
+            <h1 className="text-4xl text-center mb-4">
+              {botId ? <p>Edit bot</p> : <p>Add bot</p>}
+            </h1>
             <form className="max-w-md mx-auto" onSubmit={addBot}>
               <input
                 required
@@ -132,13 +133,21 @@ export default function AddBot() {
                     <FontAwesomeIcon icon={faDownload} />
                   </a>
                 )}
-                <input type="file" required={botId ? false : true} onChange={(ev) => setFile(ev.target.files[0])}
-                  className="w-full text-black text-sm bg-white border file:cursor-pointer cursor-pointer file:border-0 file:py-2.5 file:px-4 file:bg-gray-100 file:hover:bg-gray-200 file:text-black rounded" />
+                <input
+                  type="file"
+                  required={botId ? false : true}
+                  onChange={(ev) => setFile(ev.target.files[0])}
+                  className="w-full text-black text-sm bg-white border file:cursor-pointer cursor-pointer file:border-0 file:py-2.5 file:px-4 file:bg-gray-100 file:hover:bg-gray-200 file:text-black rounded"
+                />
               </div>
               {botId ? (
-                <button disabled={loading} className="primary">Update Bot</button>
+                <button disabled={loading} className="primary">
+                  Update Bot
+                </button>
               ) : (
-                <button disabled={loading} className="primary">add bot</button>
+                <button disabled={loading} className="primary">
+                  add bot
+                </button>
               )}
 
               {loading && (

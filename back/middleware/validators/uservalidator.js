@@ -1,7 +1,7 @@
 const { check, param } = require('express-validator');
 
 const getAllUsersValidationRules = () => {
-    const validSearchOptions = ['all', 'matricule', 'email', 'firstname', 'lastname', 'department', 'role']
+    const validSearchOptions = ['all', 'matricule', 'email', 'firstname', 'lastname', 'department', 'role','group']
     return [
         check('search').optional().isString().withMessage('Search must be a string').isLength({ max: 50 }).withMessage('Search query is too long'),
         check('searchOption').optional().escape().isString().withMessage('Search option must be a string').isIn(validSearchOptions).withMessage('Invalid search option')
