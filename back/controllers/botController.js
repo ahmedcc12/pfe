@@ -51,9 +51,8 @@ const getAllBots = async (req, res) => {
 };
 
 const createBot = async (req, res) => {
-  const { name, description } = req.body;
+  const { name, description, guide } = req.body;
   const file = req.file;
-  const status = "inactive";
   if (!name || !description || !file) {
     return res.status(400).json({ message: "Missing required fields" });
   }
@@ -72,7 +71,7 @@ const createBot = async (req, res) => {
       name,
       description,
       configuration: { downloadURL, path },
-      status,
+      guide,
     });
 
     const result = await newBot.save();
@@ -138,7 +137,7 @@ const updateBot = async (req, res) => {
   if (!req?.params?.id)
     return res.status(400).json({ message: "Bot name required" });
 
-  const { name, description } = req.body;
+  const { name, description, guide } = req.body;
   const file = req.file;
 
   if (!name || !description) {
@@ -160,6 +159,7 @@ const updateBot = async (req, res) => {
 
     existingBot.name = name;
     existingBot.description = description;
+    existingBot.guide = guide;
     if (file) {
       if (existingBot.configuration.path) {
         const filePath = existingBot.configuration.path;

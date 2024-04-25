@@ -144,7 +144,6 @@ export default function CreateGroup() {
 
   const onSubmit = async (data) => {
     try {
-      console.log('data', data);
       if (isEdit) {
         Swal.fire({
           customClass: {
@@ -201,9 +200,6 @@ export default function CreateGroup() {
       const errorMessage = err.response?.data?.message || 'An error occurred';
       let errField = err.response?.data?.field;
       if (errField) {
-        if (errField === 'botIds') errField = 'selectedBots';
-        console.log('errField', errField);
-
         setError(errField, {
           type: 'manual',
           message: errorMessage,
@@ -307,11 +303,6 @@ export default function CreateGroup() {
                       </FormControl>
                     )}
                   />
-                  {errMsg && (
-                    <Box sx={{ mt: 3 }}>
-                      <Typography color="error">{errMsg}</Typography>
-                    </Box>
-                  )}
                 </Box>
 
                 <Stack alignItems="flex-end" sx={{ mt: 3 }}>
@@ -322,6 +313,11 @@ export default function CreateGroup() {
                   >
                     {!isEdit ? 'Create Group' : 'Save Changes'}
                   </LoadingButton>
+                  {errMsg && (
+                    <Box sx={{ mt: 3 }}>
+                      <Typography color="error">{errMsg}</Typography>
+                    </Box>
+                  )}
                 </Stack>
               </Card>
             </Grid>

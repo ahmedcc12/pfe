@@ -24,12 +24,30 @@ import userNavConfig from './user-config-navigation';
 
 import Iconify from 'src/components/iconify';
 
+import useRefreshToken from 'src/hooks/useRefreshToken';
+
+import { io } from 'socket.io-client';
+
 // ----------------------------------------------------------------------
 
 export default function Nav({ openNav, onCloseNav, section }) {
   const userNav = userNavConfig();
   const { auth } = useAuth();
   const account = auth.user;
+  const refresh = useRefreshToken();
+
+  const ENDPOINT = 'http://localhost:9000';
+
+  useEffect(() => {
+    const socket = io(ENDPOINT);
+    socket.on('UserUpdated', ({ userId }) => {
+      if (userId === account.userId) refresh();
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [refresh]);
 
   const pathname = usePathname();
 

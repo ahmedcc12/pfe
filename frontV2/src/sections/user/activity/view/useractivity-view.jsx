@@ -77,8 +77,14 @@ export default function UserActivityPage() {
       }
     });
 
+    socket.on('botFinished', ({ userId }) => {
+      if (userId === auth.user.userId) {
+        fetchActivity();
+      }
+    });
+
     return () => {
-      socket.off();
+      socket.disconnect();
     };
   }, []);
 
@@ -214,6 +220,9 @@ export default function UserActivityPage() {
                   { id: 'bot', label: 'Bot name' },
                   { id: 'status', label: 'Status' },
                   { id: 'config', label: 'Config' },
+                  { id: 'StartedAt', label: 'Started At' },
+                  { id: 'StoppedAt', label: 'Stopped At' },
+                  { id: 'logs', label: 'Logs' },
                 ]}
               />
 

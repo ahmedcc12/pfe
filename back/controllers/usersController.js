@@ -149,6 +149,7 @@ const updateUser = async (req, res) => {
         downloadURL: downloadURL,
       };
       await user.save();
+      global.io.emit("UserUpdated", { userId: user._id });
     }
 
     res.json(user);

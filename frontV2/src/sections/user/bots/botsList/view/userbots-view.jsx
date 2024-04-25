@@ -29,6 +29,7 @@ import UserBotTableRow from '../userbot-table-row';
 import useAxiosPrivate from 'src/hooks/useAxiosPrivate';
 import useAuth from 'src/hooks/useAuth';
 import Swal from 'sweetalert2';
+import io from 'socket.io-client';
 
 // ----------------------------------------------------------------------
 
@@ -61,9 +62,26 @@ export default function UserBotsPage() {
 
   const navigate = useNavigate();
 
+  const ENDPOINT = 'http://localhost:9000';
+
   useEffect(() => {
+    const socket = io(ENDPOINT);
+
+    socket.on('botStarted', ({ userId }) => {
+      if (userId === auth.user.userId) {
+        fetchBots();
+      }
+    });
+
+    socket.on('botFinished', ({ userId }) => {
+      if (userId === auth.user.userId) {
+        fetchBots();
+      }
+    });
     return () => {
       Swal.close();
+
+      socket.disconnect();
     };
   }, []);
 
@@ -226,6 +244,7 @@ export default function UserBotsPage() {
                 headLabel={[
                   { id: 'name', label: 'Name' },
                   { id: 'description', label: 'Description' },
+                  { id: 'guide', label: 'Guide' },
                   { id: 'status', label: 'Status' },
                   { id: '' },
                 ]}

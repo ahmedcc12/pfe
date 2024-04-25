@@ -4,7 +4,6 @@ import axios from 'src/api/axios';
 import ReCAPATCHA from 'react-google-recaptcha';
 
 import Box from '@mui/material/Box';
-import Link from '@mui/material/Link';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import Divider from '@mui/material/Divider';
@@ -22,6 +21,7 @@ import { bgGradient } from 'src/theme/css';
 
 import Logo from 'src/components/logo';
 import Iconify from 'src/components/iconify';
+import { Button } from '@mui/material';
 
 // ----------------------------------------------------------------------
 
@@ -69,8 +69,6 @@ export default function LoginView() {
       setError(err.response?.data?.message || 'An error occurred');
     }
     setLoading(false);
-
-    console.log('Loading:', loading, 'Error:', error);
   }
 
   const togglePersist = () => {
@@ -131,9 +129,13 @@ export default function LoginView() {
           Remember me
         </Typography>
 
-        <Link variant="subtitle2" underline="hover">
+        <Button
+          variant="subtitle2"
+          underline="hover"
+          onClick={() => router.push('/forgot-password')}
+        >
           Forgot password?
-        </Link>
+        </Button>
       </Stack>
       <LoadingButton
         fullWidth
@@ -142,6 +144,7 @@ export default function LoginView() {
         variant="contained"
         color="inherit"
         onClick={handleLoginSubmit}
+        loading={loading}
       >
         Login
       </LoadingButton>
@@ -179,8 +182,6 @@ export default function LoginView() {
             maxWidth: 420,
           }}
         >
-          <Typography variant="h4">Sign in</Typography>
-
           <Divider sx={{ my: 3 }}>
             <Typography
               variant="body2"

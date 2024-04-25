@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { fData } from 'src/utils/format-number';
 
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 
 import { LoadingButton } from '@mui/lab';
@@ -14,7 +14,6 @@ import { Box, Card, Grid, Stack, Container, Typography } from '@mui/material';
 import {
   FormProvider,
   RHFSelect,
-  RHFSwitch,
   RHFTextField,
   RHFUploadAvatar,
 } from 'src/components/hook-form';
@@ -33,8 +32,6 @@ export default function CreateUser() {
   const isEdit = Boolean(userId);
 
   const [currentUser, setCurrentUser] = useState(null);
-
-  const [group, setGroup] = useState(null);
 
   const [allGroups, setAllGroups] = useState([]);
 
@@ -63,12 +60,7 @@ export default function CreateUser() {
     const fetchUser = async () => {
       try {
         const { data } = await axiosPrivate.get(`/users/${userId}`);
-        console.log('fetching user with id ', data);
         setCurrentUser(data);
-        setGroup({
-          label: data.group.name,
-          value: data.group._id,
-        });
       } catch (error) {
         console.error('Error fetching user', error);
         navigate('/missing');
@@ -147,6 +139,7 @@ export default function CreateUser() {
   ]);
 
   useEffect(() => {
+    setErrMsg('');
     return () => {
       Swal.close();
     };
@@ -160,10 +153,6 @@ export default function CreateUser() {
     roleWatch,
     avatarUrlWatch,
   ]);
-
-  useEffect(() => {
-    console.log('values', avatarUrlWatch);
-  }, [avatarUrlWatch]);
 
   useEffect(() => {
     if (isEdit && currentUser) {
@@ -231,6 +220,7 @@ export default function CreateUser() {
       console.error('Error registering user', err);
       const errorMessage = err.response?.data?.message || 'An error occurred';
       const errField = err.response?.data?.field;
+      if (errField === 'avatarUrl' || !errField) return setErrMsg(errorMessage);
       setError(errField, {
         type: 'manual',
         message: errorMessage,
@@ -241,8 +231,6 @@ export default function CreateUser() {
   const handleDrop = useCallback(
     (acceptedFiles) => {
       const file = acceptedFiles[0];
-
-      console.log('file', file);
 
       if (file) {
         setValue(
@@ -270,7 +258,12 @@ export default function CreateUser() {
                 <Box sx={{ mb: 5 }}>
                   <RHFUploadAvatar
                     name="avatarUrl"
-                    accept="image/*"
+                    acceptedFiles={{
+                      'image/jpeg': ['.jpeg'],
+                      'image/jpg': ['.jpg'],
+                      'image/png': ['.png'],
+                      'image/gif': ['.gif'],
+                    }}
                     maxSize={3145728}
                     onDrop={handleDrop}
                     helperText={
@@ -328,15 +321,6 @@ export default function CreateUser() {
                     <option value="user">User</option>
                     <option value="admin">Admin</option>
                   </RHFSelect>
-
-                  {/* <RHFSelect name="country" label="Country" placeholder="Country">
-                <option value="" />
-                {countries.map((option) => (
-                  <option key={option.code} value={option.label}>
-                    {option.label}
-                  </option>
-                ))}
-              </RHFSelect> */}
                 </Box>
 
                 <Stack alignItems="flex-end" sx={{ mt: 3 }}>
@@ -347,6 +331,11 @@ export default function CreateUser() {
                   >
                     {!isEdit ? 'Create User' : 'Save Changes'}
                   </LoadingButton>
+                  {errMsg && (
+                    <Box sx={{ mt: 3 }}>
+                      <Typography color="error">{errMsg}</Typography>
+                    </Box>
+                  )}
                 </Stack>
               </Card>
             </Grid>

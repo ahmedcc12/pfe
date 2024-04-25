@@ -36,6 +36,7 @@ UploadSingleFile.propTypes = {
   error: PropTypes.bool,
   file: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
   helperText: PropTypes.node,
+  acceptedFiles: PropTypes.object,
   sx: PropTypes.object,
 };
 
@@ -44,6 +45,7 @@ export default function UploadSingleFile({
   file,
   helperText,
   sx,
+  acceptedFiles,
   ...other
 }) {
   const {
@@ -54,13 +56,15 @@ export default function UploadSingleFile({
     fileRejections,
   } = useDropzone({
     multiple: false,
+    accept: {
+      ...acceptedFiles,
+    },
     ...other,
   });
 
   const { setValue } = useFormContext();
 
   const handleDelete = () => {
-    // Reset the file value to null
     setValue('file', null);
   };
 

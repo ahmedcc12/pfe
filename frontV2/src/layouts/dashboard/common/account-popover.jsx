@@ -17,6 +17,10 @@ import ProfileModal from '../../profileModal';
 
 import Iconify from 'src/components/iconify';
 
+import useRefreshToken from 'src/hooks/useRefreshToken';
+
+import { io } from 'socket.io-client';
+
 // ----------------------------------------------------------------------
 
 const MENU_OPTIONS = [
@@ -34,10 +38,20 @@ export default function userPopover() {
   const navigate = useNavigate();
   const { auth } = useAuth();
   const user = auth.user;
+  const refresh = useRefreshToken();
+
+  const ENDPOINT = 'http://localhost:9000';
 
   useEffect(() => {
-    console.log(user);
-  }, [user]);
+    const socket = io(ENDPOINT);
+    socket.on('UserUpdated', ({ userId }) => {
+      if (userId === user.userId) refresh();
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [refresh]);
 
   const logout = useLogout();
 

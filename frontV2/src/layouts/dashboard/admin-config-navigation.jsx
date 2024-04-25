@@ -21,37 +21,37 @@ const adminNavConfig = [
     title: 'Users',
     path: '/admin/users',
     icon: icon('ic_user'),
-    children: [
+    /*     children: [
       {
         title: 'Add User',
         path: '/admin/users/new',
         icon: icon('ic_plus'),
       },
-    ],
+    ], */
   },
   {
     title: 'Bots',
     path: '/admin/bots',
     icon: icon('ic_bot'),
-    children: [
+    /*     children: [
       {
         title: 'Add Bot',
         path: '/admin/bots/new',
         icon: icon('ic_plus'),
       },
-    ],
+    ], */
   },
   {
     title: 'Groups',
     path: '/admin/groups',
     icon: icon('ic_group'),
-    children: [
+    /*     children: [
       {
         title: 'Add Group',
         path: '/admin/groups/new',
         icon: icon('ic_plus'),
       },
-    ],
+    ], */
   },
   {
     title: 'HomePage',

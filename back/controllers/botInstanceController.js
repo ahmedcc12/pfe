@@ -5,6 +5,7 @@ const User = require("../model/User");
 const Bot = require("../model/Bot");
 const Group = require("../model/Group");
 const Notification = require("../model/Notification");
+const runBot = require("../middleware/handleBot/runBot");
 
 const getAllBotInstances = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
@@ -96,6 +97,46 @@ const createBotInstance = async (req, res) => {
     });
 
     const result = await newBotInstance.save();
+
+    const scriptUrl = botExists.configuration.downloadURL;
+    const configFileUrl = result.configuration.downloadURL;
+
+    const finishednotification = new Notification({
+      user,
+      message: "Please check the logs for more information",
+      type: "Alert",
+    });
+
+    global.io.emit("botStarted", { userId: user, botId: bot });
+
+    runBot(scriptUrl, configFileUrl)
+      .then((output) => {
+        result.logs.push({
+          timestamp: Date.now(),
+          status: "success",
+          message: output,
+        });
+        result.status = "success";
+        result.StoppedAt = Date.now();
+        finishednotification.title = `${botExists.name} Finished Successfully`;
+      })
+      .catch((error) => {
+        result.logs.push({
+          timestamp: Date.now(),
+          status: "error",
+          message: error,
+        });
+        result.status = "error";
+        result.StoppedAt = Date.now();
+        finishednotification.title = `${botExists.name} Finished with errors`;
+      })
+      .finally(async () => {
+        await result.save();
+        global.io.emit("newNotification", { userId: user });
+        global.io.emit("botFinished", { userId: user, botId: bot });
+        await finishednotification.save();
+      });
+
     res.json(result);
   } catch (error) {
     console.error(error);
@@ -234,18 +275,56 @@ const scheduleBot = async (req, res) => {
       botInstance.isScheduled = false;
       botInstance.StartedAt = Date.now();
       await botInstance.save();
-      const message = `${botExists.name} has started`;
-      const notification = new Notification({
+
+      const startednotification = new Notification({
         user,
-        message,
+        message: `${botExists.name} Started`,
         title: "Bot Started",
         type: "Alert",
       });
-      if (notification) {
+
+      if (startednotification) {
         global.io.emit("newNotification", { userId: user });
         global.io.emit("botStarted", { userId: user, botId: bot });
-        await notification.save();
+        await startednotification.save();
       }
+
+      const scriptUrl = botExists.configuration.downloadURL;
+      const configFileUrl = result.configuration.downloadURL;
+
+      const finishednotification = new Notification({
+        user,
+        message: "Please check the logs for more information",
+        type: "Alert",
+      });
+
+      runBot(scriptUrl, configFileUrl)
+        .then((output) => {
+          result.logs.push({
+            timestamp: Date.now(),
+            status: "success",
+            message: output,
+          });
+          result.status = "success";
+          result.StoppedAt = Date.now();
+          finishednotification.title = `${botExists.name} Finished Successfully`;
+        })
+        .catch((error) => {
+          result.logs.push({
+            timestamp: Date.now(),
+            status: "error",
+            message: error,
+          });
+          result.status = "error";
+          result.StoppedAt = Date.now();
+          finishednotification.title = `${botExists.name} Finished with errors`;
+        })
+        .finally(async () => {
+          await result.save();
+          global.io.emit("newNotification", { userId: user });
+          global.io.emit("botFinished", { userId: user, botId: bot });
+          await finishednotification.save();
+        });
     });
     res.json(result);
   } catch (error) {

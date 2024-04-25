@@ -51,7 +51,6 @@ export default function NotificationsPopover() {
         const response = await axiosPrivate.get(
           `/notifications/unread/${auth.user.userId}`,
         );
-        console.log('Unread notifications:', response.data.unread);
         setUnreadNotifications(response.data.unread);
       } catch (error) {
         console.error('Error fetching notifications:', error);
@@ -69,7 +68,7 @@ export default function NotificationsPopover() {
     });
 
     return () => {
-      socket.off();
+      socket.disconnect();
     };
   }, []);
 
@@ -129,7 +128,7 @@ export default function NotificationsPopover() {
 
   NotificationItem.propTypes = {
     notification: PropTypes.shape({
-      createdAt: PropTypes.instanceOf(Date),
+      createdAt: PropTypes.string,
       _id: PropTypes.string,
       read: PropTypes.bool,
       message: PropTypes.string,

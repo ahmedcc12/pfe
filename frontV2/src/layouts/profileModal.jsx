@@ -15,12 +15,31 @@ import { useModeContext } from 'src/context/ModeContext';
 
 import Swal from 'sweetalert2';
 
+import { io } from 'socket.io-client';
+import { useEffect } from 'react';
+
+import useRefreshToken from 'src/hooks/useRefreshToken';
+
 export default function ProfileModal({ open, onClose }) {
   const { auth } = useAuth();
   const user = auth.user;
   const email = user.email;
   const axiosPrivate = useAxiosPrivate();
   const { themeMode } = useModeContext();
+  const refresh = useRefreshToken();
+
+  const ENDPOINT = 'http://localhost:9000';
+
+  useEffect(() => {
+    const socket = io(ENDPOINT);
+    socket.on('UserUpdated', ({ userId }) => {
+      if (userId === user.userId) refresh();
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [refresh]);
 
   const handleClose = () => {
     onClose();

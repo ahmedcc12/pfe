@@ -134,11 +134,18 @@ export default function UserBotTableRow({
           </Stack>
         </TableCell>
 
-        <TableCell> {bot.description} </TableCell>
+        <TableCell>{bot.description} </TableCell>
 
         <TableCell>
-          <Label color={(bot.status === 'inactive' && 'error') || 'success'}>
-            {bot.status}
+          {' '}
+          <Typography style={{ wordBreak: 'break-all' }}>
+            {bot?.guide}
+          </Typography>
+        </TableCell>
+
+        <TableCell>
+          <Label color={(bot.status === 'active' && 'success') || 'error'}>
+            {bot.status === 'active' ? 'active' : 'inactive'}
           </Label>
         </TableCell>
 
@@ -162,21 +169,20 @@ export default function UserBotTableRow({
         <MenuItem
           onClick={() => {
             handleCloseMenu();
-            if (bot.status === 'inactive') {
-              handleOpenStartModal();
-            } else if (bot.status === 'active') handleStop();
+            if (bot.status === 'active') {
+              handleStop();
+            } else handleOpenStartModal();
           }}
           sx={{
-            color: bot.status === 'inactive' ? 'success.main' : 'error.main',
+            color: bot.status === 'active' ? 'error.main' : 'success.main',
           }}
         >
-          {bot.status === 'active' && (
-            <Iconify icon="eva:pause-circle-outline" sx={{ mr: 1 }} />
-          )}
-          {bot.status === 'inactive' && (
+          {bot.status === 'active' ? (
+            <Iconify icon="eva:stop-circle-outline" sx={{ mr: 1 }} />
+          ) : (
             <Iconify icon="eva:play-circle-outline" sx={{ mr: 1 }} />
           )}
-          {bot.status === 'active' ? 'Pause' : 'Start'}
+          {bot.status === 'active' ? 'Stop' : 'Start'}
         </MenuItem>
       </Popover>
       <StartBotModal

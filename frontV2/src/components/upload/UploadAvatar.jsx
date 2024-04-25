@@ -61,6 +61,7 @@ UploadAvatar.propTypes = {
   error: PropTypes.bool,
   file: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
   helperText: PropTypes.node,
+  acceptedFiles: PropTypes.object,
   sx: PropTypes.object,
 };
 
@@ -68,6 +69,7 @@ export default function UploadAvatar({
   error,
   file,
   helperText,
+  acceptedFiles,
   sx,
   ...other
 }) {
@@ -79,6 +81,9 @@ export default function UploadAvatar({
     fileRejections,
   } = useDropzone({
     multiple: false,
+    accept: {
+      ...acceptedFiles,
+    },
     ...other,
   });
 

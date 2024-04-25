@@ -82,7 +82,6 @@ export default function UserPage() {
   };
 
   useEffect(() => {
-    console.log('searchOption', searchOption, filterName);
     if (filterName !== '') {
       setCurrentPage(1);
       const fetchData = async () => {

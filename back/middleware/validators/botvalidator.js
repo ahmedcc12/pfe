@@ -41,6 +41,21 @@ const BotValidationRules = () => {
       .withMessage(
         "Description must be at least 4 characters long and at most 200 characters long"
       ),
+    check("guide")
+      .trim()
+      .escape()
+      .notEmpty()
+      .withMessage("Guide is required")
+      .isLength({ min: 10 })
+      .withMessage("Guide must be at least 10 characters"),
+    check("file")
+      .custom((value, { req }) => {
+        if (!req.file) throw new Error("File is required");
+        return (
+          req.file.mimetype === "application/x-python-code" || "text/x-python"
+        );
+      })
+      .withMessage("Invalid file type"),
   ];
 };
 

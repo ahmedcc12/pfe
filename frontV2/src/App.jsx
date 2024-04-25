@@ -7,6 +7,8 @@ import PersistLogin from 'src/utils/PersistLogin';
 import AdminSections from 'src/routes/adminSections';
 import UserSections from 'src/routes/userSections';
 import Login from './pages/shared/login';
+import ForgotPasswordPage from './pages/shared/forgotPassword';
+import ResetPasswordPage from './pages/shared/resetPassword';
 import PublicRoute from './routes/publicRoute';
 import NotFound from 'src/pages/shared/page-not-found';
 
@@ -30,6 +32,8 @@ function App() {
         <Route element={<RequireAuth allowedRoles={['admin']} />}>
           <Route path="/admin/*" element={<AdminSections />} />
         </Route>
+        <Route path="forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="resetpassword/:token" element={<ResetPasswordPage />} />
         <Route path="/404" element={<NotFound />} />
         <Route path="*" element={<NotFound />} />
       </Route>

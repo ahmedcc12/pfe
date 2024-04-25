@@ -10,9 +10,10 @@ import { UploadAvatar, UploadMultiFile, UploadSingleFile } from '../upload';
 
 RHFUploadAvatar.propTypes = {
   name: PropTypes.string,
+  acceptedFiles: PropTypes.object,
 };
 
-export function RHFUploadAvatar({ name, ...other }) {
+export function RHFUploadAvatar({ name, acceptedFiles, ...other }) {
   const { control } = useFormContext();
 
   return (
@@ -24,7 +25,12 @@ export function RHFUploadAvatar({ name, ...other }) {
 
         return (
           <div>
-            <UploadAvatar error={checkError} {...other} file={field} />
+            <UploadAvatar
+              error={checkError}
+              {...other}
+              file={field.value}
+              acceptedFiles={acceptedFiles}
+            />
             {checkError && (
               <FormHelperText error sx={{ px: 2, textAlign: 'center' }}>
                 {error.message}
@@ -41,9 +47,10 @@ export function RHFUploadAvatar({ name, ...other }) {
 
 RHFUploadSingleFile.propTypes = {
   name: PropTypes.string,
+  acceptedFiles: PropTypes.object,
 };
 
-export function RHFUploadSingleFile({ name, ...other }) {
+export function RHFUploadSingleFile({ name, acceptedFiles, ...other }) {
   const { control } = useFormContext();
 
   return (
@@ -55,6 +62,7 @@ export function RHFUploadSingleFile({ name, ...other }) {
 
         return (
           <UploadSingleFile
+            acceptedFiles={acceptedFiles}
             file={field.value}
             error={checkError}
             helperText={

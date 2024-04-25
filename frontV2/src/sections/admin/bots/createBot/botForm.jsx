@@ -56,6 +56,7 @@ export default function CreateBot() {
   const NewBotSchema = Yup.object().shape({
     name: Yup.string().required('Name is required'),
     description: Yup.string().required('Description is required'),
+    guide: Yup.string().required('Guide is required'),
     file: Yup.mixed().test(
       'required',
       'Script is required',
@@ -68,6 +69,7 @@ export default function CreateBot() {
       name: currentBot?.name || '',
       description: currentBot?.description || '',
       file: currentBot?.configuration.downloadURL || '',
+      guide: currentBot?.guide || '',
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [currentBot],
@@ -165,12 +167,11 @@ export default function CreateBot() {
       console.error('Error adding bot', err);
       const errorMessage = err.response?.data?.message || 'An error occurred';
       const errField = err.response?.data?.field;
-      if (errField)
-        setError(errField, {
-          type: 'manual',
-          message: errorMessage,
-        });
-      else setErrMsg(errorMessage);
+      if (errField === 'file' || !errField) return setErrMsg(errorMessage);
+      setError(errField, {
+        type: 'manual',
+        message: errorMessage,
+      });
     }
   };
 
@@ -221,7 +222,9 @@ export default function CreateBot() {
                   <RHFTextField name="name" label="Name" />
                   <RHFTextField name="description" label="Description" />
                 </Box>
-
+                <Box sx={{ mt: 3 }}>
+                  <RHFTextField multiline rows={4} name="guide" label="Guide" />
+                </Box>
                 <Card
                   sx={{
                     py: 5,
@@ -233,6 +236,10 @@ export default function CreateBot() {
                   <Box>
                     <RHFUploadSingleFile
                       name="file"
+                      acceptedFiles={{
+                        'text/x-python': ['.py'],
+                        'application/x-python-code': ['.pyc'],
+                      }}
                       maxSize={3145728}
                       onDrop={handleDrop}
                       helperText={
@@ -254,11 +261,6 @@ export default function CreateBot() {
                     />
                   </Box>
                 </Card>
-                {errMsg && (
-                  <Box sx={{ mt: 3 }}>
-                    <Typography color="error">{errMsg}</Typography>
-                  </Box>
-                )}
                 <Stack alignItems="flex-end" sx={{ mt: 3 }}>
                   <LoadingButton
                     type="submit"
@@ -267,6 +269,11 @@ export default function CreateBot() {
                   >
                     {!isEdit ? 'Create Bot' : 'Save Changes'}
                   </LoadingButton>
+                  {errMsg && (
+                    <Box sx={{ mt: 3 }}>
+                      <Typography color="error">{errMsg}</Typography>
+                    </Box>
+                  )}
                 </Stack>
               </Card>
             </Grid>

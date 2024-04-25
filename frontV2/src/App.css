@@ -2,7 +2,12 @@
 @import 'simplebar-react/dist/simplebar.min.css';
 
 .swal-z-index {
-  z-index: 2000 !important; /* Or any number higher than the modal's z-index */
+  z-index: 2000 !important;
+}
+
+.swal2-shown {
+  height: auto !important;
+  position: fixed;
 }
 
 .swal-dark-theme {
