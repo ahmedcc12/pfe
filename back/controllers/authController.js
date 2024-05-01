@@ -7,14 +7,14 @@ require("dotenv").config();
 const handleLogin = async (req, res) => {
   const { email, pwd, recaptchaToken } = req.body;
 
-  if (!recaptchaToken)
+  /* if (!recaptchaToken)
     return res.status(400).json({ message: "Validate recaptcha" });
 
   const url = `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${recaptchaToken}`;
   const response = await fetch(url, { method: "POST" });
   const recaptcha = await response.json();
   if (!recaptcha.success)
-    return res.status(400).json({ message: "Recaptcha failed" });
+    return res.status(400).json({ message: "Recaptcha failed" }); */
 
   if (!email || !pwd)
     return res

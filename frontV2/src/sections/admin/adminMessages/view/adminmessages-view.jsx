@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
@@ -16,7 +15,6 @@ import Pagination from '@mui/material/Pagination';
 import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
 import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
 
-import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
 
 import TableNoData from 'src/components/tables/table-no-data';
@@ -24,16 +22,20 @@ import CustomTableHead from 'src/components/tables/table-head';
 import TableEmptyRows from 'src/components/tables/table-empty-rows';
 import TableToolBar from 'src/components/tables/table-toolbar';
 
-import BotTableRow from '../bot-table-row';
+import AdminMessagesTableRow from '../adminmessages-table-row';
 
 import useAxiosPrivate from 'src/hooks/useAxiosPrivate';
+import useAuth from 'src/hooks/useAuth';
+import io from 'socket.io-client';
 
 // ----------------------------------------------------------------------
 
-export default function BotsPage() {
+export default function AdminMessagesPage() {
   const axiosPrivate = useAxiosPrivate();
 
-  const [bots, setBots] = useState([]);
+  const { auth } = useAuth();
+
+  const [messages, setMessages] = useState([]);
 
   const [totalPages, setTotalPages] = useState(1);
 
@@ -41,11 +43,11 @@ export default function BotsPage() {
 
   const [currentPage, setCurrentPage] = useState(1);
 
-  const [order, setOrder] = useState('asc');
+  const [order, setOrder] = useState('desc');
 
   const [selected, setSelected] = useState([]);
 
-  const [orderBy, setOrderBy] = useState('name');
+  const [orderBy, setOrderBy] = useState('sentAt');
 
   const [filterName, setFilterName] = useState('');
 
@@ -55,17 +57,29 @@ export default function BotsPage() {
 
   const [loading, setLoading] = useState(false);
 
-  const navigate = useNavigate();
+  const ENDPOINT = 'http://localhost:9000';
 
-  const fetchBots = async () => {
+  useEffect(() => {
+    const socket = io(ENDPOINT);
+
+    socket.on('newMessage', () => {
+      fetchMessages();
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [limit, currentPage, filterName, orderBy, order, searchOption]);
+
+  const fetchMessages = async () => {
     try {
       setLoading(true);
       const response = await axiosPrivate.get(
-        `/bots?page=${currentPage}&limit=${limit}&search=${filterName}&searchOption=${searchOption}&orderBy=${orderBy}&order=${order}`,
+        `/adminmessage?page=${currentPage}&limit=${limit}&search=${filterName}&searchOption=${searchOption}&orderBy=${orderBy}&order=${order}`,
       );
-      if (!response.data.bots) setBots([]);
+      if (!response.data.messages) setMessages([]);
       else {
-        setBots(response.data.bots);
+        setMessages(response.data.messages);
         setTotalPages(response.data.totalPages);
         setTotalCount(response.data.totalCount);
       }
@@ -80,7 +94,7 @@ export default function BotsPage() {
     if (filterName !== '') {
       setCurrentPage(1);
       const fetchData = async () => {
-        await fetchBots();
+        await fetchMessages();
       };
 
       fetchData();
@@ -89,7 +103,7 @@ export default function BotsPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      await fetchBots();
+      await fetchMessages();
     };
     fetchData();
   }, [currentPage, filterName, limit, orderBy, order]);
@@ -100,13 +114,13 @@ export default function BotsPage() {
       setOrder(isAsc ? 'desc' : 'asc');
       setOrderBy(id);
       setCurrentPage(1);
-      await fetchBots();
+      await fetchMessages();
     }
   };
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = bots.map((n) => n._id);
+      const newSelecteds = messages.map((n) => n._id);
       setSelected(newSelecteds);
       return;
     }
@@ -146,13 +160,15 @@ export default function BotsPage() {
     setCurrentPage(1);
   };
 
-  const botDeleted = (_id) => {
-    const newBots = bots.filter((bot) => bot._id !== _id);
-    setBots(newBots);
-    setTotalCount(totalCount - 1);
+  const markSolved = (_id) => {
+    setMessages((prevMessages) =>
+      prevMessages.map((message) =>
+        message._id === _id ? { ...message, solved: true } : message,
+      ),
+    );
   };
 
-  const notFound = (!bots || bots.length === 0) && !loading;
+  const notFound = (!messages || messages.length === 0) && !loading;
 
   return (
     <Container
@@ -167,16 +183,7 @@ export default function BotsPage() {
         justifyContent="space-between"
         mb={5}
       >
-        <Typography variant="h4">Bots</Typography>
-
-        <Button
-          variant="contained"
-          color="inherit"
-          startIcon={<Iconify icon="eva:plus-fill" />}
-          onClick={() => navigate('/admin/bots/new')}
-        >
-          New bot
-        </Button>
+        <Typography variant="h4">Actvity</Typography>
       </Stack>
 
       <Card>
@@ -185,11 +192,7 @@ export default function BotsPage() {
           handleFilterByName={handleFilterByName}
           setSearchOption={setSearchOption}
           searchOption={searchOption}
-          SEARCH_OPTIONS={[
-            { value: 'all', label: 'All' },
-            { value: 'name', label: 'Name' },
-            { value: 'description', label: 'Description' },
-          ]}
+          SEARCH_OPTIONS={null}
         />
 
         <Scrollbar>
@@ -199,25 +202,27 @@ export default function BotsPage() {
                 loading={loading}
                 order={order}
                 orderBy={orderBy}
-                rowCount={bots.length}
+                rowCount={messages.length}
                 numSelected={selected.length}
                 onRequestSort={handleSort}
                 onSelectAllClick={handleSelectAllClick}
                 headLabel={[
-                  { id: 'name', label: 'Name' },
-                  { id: 'description', label: 'Description' },
-                  { id: 'script', label: 'Script' },
-                  { id: '' },
+                  { id: 'from', label: 'From' },
+                  { id: 'subject', label: 'Subject' },
+                  { id: 'message', label: 'Message' },
+                  { id: 'createdAt', label: 'Sent At' },
+                  { id: 'solved', label: 'Solved' },
+                  { id: '', label: '' },
                 ]}
               />
 
               <TableBody>
-                {bots.length > 0 &&
-                  bots.map((row, index) => (
-                    <BotTableRow
+                {messages.length > 0 &&
+                  messages.map((row, index) => (
+                    <AdminMessagesTableRow
                       key={row._id}
-                      botDeleted={botDeleted}
-                      bot={row}
+                      message={row}
+                      markSolved={markSolved}
                       selected={selected.indexOf(row._id) !== -1}
                       handleClick={(event) => handleClick(event, row._id)}
                       style={{
@@ -229,9 +234,9 @@ export default function BotsPage() {
                 <TableEmptyRows
                   height={77}
                   emptyRows={
-                    bots.length > 0
-                      ? limit - bots.length > 0
-                        ? limit - bots.length
+                    messages.length > 0
+                      ? limit - messages.length > 0
+                        ? limit - messages.length
                         : 0
                       : 0
                   }

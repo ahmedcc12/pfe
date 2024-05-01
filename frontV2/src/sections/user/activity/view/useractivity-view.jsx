@@ -16,7 +16,6 @@ import Pagination from '@mui/material/Pagination';
 import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
 import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
 
-import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
 
 import TableNoData from 'src/components/tables/table-no-data';
@@ -46,11 +45,11 @@ export default function UserActivityPage() {
 
   const [currentPage, setCurrentPage] = useState(1);
 
-  const [order, setOrder] = useState('asc');
+  const [order, setOrder] = useState('desc');
 
   const [selected, setSelected] = useState([]);
 
-  const [orderBy, setOrderBy] = useState('bot');
+  const [orderBy, setOrderBy] = useState('StoppedAt');
 
   const [filterName, setFilterName] = useState('');
 
@@ -86,7 +85,7 @@ export default function UserActivityPage() {
     return () => {
       socket.disconnect();
     };
-  }, []);
+  }, [limit, currentPage, filterName, orderBy, order, searchOption]);
 
   const fetchActivity = async () => {
     try {
@@ -177,8 +176,7 @@ export default function UserActivityPage() {
     setCurrentPage(1);
   };
 
-  const notFound =
-    (!activity || activity.length === 0) && !loading && filterName !== '';
+  const notFound = (!activity || activity.length === 0) && !loading;
 
   return (
     <Container
@@ -251,8 +249,11 @@ export default function UserActivityPage() {
                   }
                 />
 
-                {notFound && (
+                {notFound && filterName !== '' && (
                   <TableNoData query={filterName} searchOption={searchOption} />
+                )}
+                {notFound && filterName == '' && (
+                  <TableNoData query={null} searchOption={null} />
                 )}
               </TableBody>
             </Table>

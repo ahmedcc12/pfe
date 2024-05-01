@@ -157,8 +157,7 @@ export default function UserPage() {
     setTotalCount(totalCount - 1);
   };
 
-  const notFound =
-    (!users || users.length === 0) && !loading && filterName !== '';
+  const notFound = (!users || users.length === 0) && !loading;
 
   return (
     <Container
@@ -252,8 +251,11 @@ export default function UserPage() {
                   }
                 />
 
-                {notFound && (
+                {notFound && filterName !== '' && (
                   <TableNoData query={filterName} searchOption={searchOption} />
+                )}
+                {notFound && filterName == '' && (
+                  <TableNoData query={null} searchOption={null} />
                 )}
               </TableBody>
             </Table>

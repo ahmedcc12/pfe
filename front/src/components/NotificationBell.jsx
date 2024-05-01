@@ -127,10 +127,10 @@ const NotificationBell = () => {
     }
   };
 
-  const handleNotificationClick = (notification) => {
-    //useNavigate(`/userActivity/${notification.user}`);
-    localStorage.setItem('userActiveComponent', 'userActivity');
-    navigate(`/`);
+  const handleNotificationClick = () => {
+    console.log('clicked');
+    navigate('/activity');
+    handleCloseMenu();
   };
 
   return (
@@ -181,7 +181,7 @@ const NotificationBell = () => {
             <hr className="my-2" />
             {notifications.map((notification) => (
               <div key={notification._id}>
-                <MenuItem onClick={() => handleNotificationClick(notification)}>
+                <MenuItem onClick={handleNotificationClick}>
                   <div className="notification-content">
                     <div
                       className="notification-message"

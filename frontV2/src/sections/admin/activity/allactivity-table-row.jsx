@@ -18,7 +18,7 @@ import dayjs from 'dayjs';
 
 // ----------------------------------------------------------------------
 
-export default function UserActivityTableRow({
+export default function AllActivityTableRow({
   selected,
   handleClick,
   instance,
@@ -62,6 +62,13 @@ export default function UserActivityTableRow({
             </Typography>
           </Stack>
         </TableCell>
+
+        <TableCell>
+          <Typography variant="subtitle2" noWrap>
+            {instance.user.firstname + ' ' + instance.user.lastname}
+          </Typography>
+        </TableCell>
+
         <TableCell>
           {instance.status === 'active' ? (
             <Label color="success">Running</Label>
@@ -161,7 +168,7 @@ export default function UserActivityTableRow({
   );
 }
 
-UserActivityTableRow.propTypes = {
+AllActivityTableRow.propTypes = {
   instance: PropTypes.object,
   selected: PropTypes.bool,
   handleClick: PropTypes.func,

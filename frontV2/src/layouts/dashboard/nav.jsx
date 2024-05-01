@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import Box from '@mui/material/Box';
@@ -12,6 +12,7 @@ import ListItemButton from '@mui/material/ListItemButton';
 import { usePathname } from 'src/routes/hooks';
 import { RouterLink } from 'src/routes/components';
 import useAuth from 'src/hooks/useAuth';
+import useAxiosPrivate from 'src/hooks/useAxiosPrivate';
 
 import { useResponsive } from 'src/hooks/use-responsive';
 
@@ -28,13 +29,40 @@ import useRefreshToken from 'src/hooks/useRefreshToken';
 
 import { io } from 'socket.io-client';
 
+import Swal from 'sweetalert2';
+
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import TextField from '@mui/material/TextField';
+
+import { useModeContext } from 'src/context/ModeContext';
+
 // ----------------------------------------------------------------------
 
 export default function Nav({ openNav, onCloseNav, section }) {
   const userNav = userNavConfig();
+
   const { auth } = useAuth();
+
+  const axiosPrivate = useAxiosPrivate();
+
   const account = auth.user;
+
   const refresh = useRefreshToken();
+
+  const { themeMode } = useModeContext();
+
+  const [errMsg, setErrMsg] = useState('');
+
+  const [subject, setSubject] = useState('');
+
+  const [message, setMessage] = useState('');
+
+  const [open, setOpen] = useState(false);
 
   const ENDPOINT = 'http://localhost:9000';
 
@@ -46,6 +74,7 @@ export default function Nav({ openNav, onCloseNav, section }) {
 
     return () => {
       socket.disconnect();
+      Swal.close();
     };
   }, [refresh]);
 
@@ -59,6 +88,55 @@ export default function Nav({ openNav, onCloseNav, section }) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const handleSend = () => {
+    Swal.fire({
+      customClass: {
+        container: `swal-z-index ${themeMode === 'dark' ? 'swal-dark-theme' : ''}`,
+      },
+      title: 'Sending message...',
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+    });
+    Swal.showLoading();
+    axiosPrivate
+      .post('/adminmessage', {
+        sender: account.userId,
+        subject,
+        message,
+      })
+      .then(() => {
+        Swal.fire({
+          customClass: {
+            container: `swal-z-index ${themeMode === 'dark' ? 'swal-dark-theme' : ''}`,
+          },
+          title: 'Message sent',
+          icon: 'success',
+          confirmButtonText: 'Ok',
+        }).then(() => {
+          setOpen(false);
+        });
+      })
+      .catch((error) => {
+        Swal.fire({
+          customClass: {
+            container: `swal-z-index ${themeMode === 'dark' ? 'swal-dark-theme' : ''}`,
+          },
+          title: 'Error',
+          text: error.response.data.error,
+          icon: 'error',
+          confirmButtonText: 'Ok',
+        });
+      });
+  };
 
   const renderAccount = (
     <Box
@@ -117,6 +195,15 @@ export default function Nav({ openNav, onCloseNav, section }) {
       {renderMenu}
 
       <Box sx={{ flexGrow: 1 }} />
+      {auth.user.role !== 'admin' && (
+        <Button
+          variant="outlined"
+          onClick={handleClickOpen}
+          sx={{ mx: 2.5, mb: 3, borderColor: 'red', color: 'red' }}
+        >
+          Contact Admin
+        </Button>
+      )}
     </Scrollbar>
   );
 
@@ -151,6 +238,44 @@ export default function Nav({ openNav, onCloseNav, section }) {
           {renderContent}
         </Drawer>
       )}
+
+      <Dialog open={open} onClose={handleClose}>
+        <DialogTitle>Contact Admin</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            To contact the admin, please enter your message here.
+          </DialogContentText>
+          <TextField
+            autoFocus
+            margin="dense"
+            id="subject"
+            label="Subject"
+            type="text"
+            fullWidth
+            required
+            variant="standard"
+            onChange={(e) => setSubject(e.target.value)}
+          />
+          <TextField
+            margin="dense"
+            id="message"
+            label="Message"
+            type="text"
+            required
+            fullWidth
+            variant="standard"
+            onChange={(e) => setMessage(e.target.value)}
+            multiline
+            rows={4}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose} color="error">
+            Cancel
+          </Button>
+          <Button onClick={handleSend}>Send</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

@@ -16,11 +16,19 @@ export const CreateUserPage = lazy(
 export const BotsList = lazy(() => import('src/pages/admin/bots/botsList'));
 export const CreateBotPage = lazy(() => import('src/pages/admin/bots/botForm'));
 
+export const ActivityList = lazy(
+  () => import('src/pages/admin/activity/activityList'),
+);
+
 export const GroupsList = lazy(
   () => import('src/pages/admin/groups/groupsList'),
 );
 export const CreateGroupPage = lazy(
   () => import('src/pages/admin/groups/groupForm'),
+);
+
+export const AdminMessagesList = lazy(
+  () => import('src/pages/admin/adminMessages/adminMessagesList'),
 );
 
 import Loader from 'src/components/loader';
@@ -48,6 +56,8 @@ export default function Router() {
         { path: '/groups', element: <GroupsList /> },
         { path: '/groups/new', element: <CreateGroupPage /> },
         { path: '/groups/:groupId', element: <CreateGroupPage /> },
+        { path: '/activity', element: <ActivityList /> },
+        { path: '/messages', element: <AdminMessagesList /> },
       ],
     },
     {

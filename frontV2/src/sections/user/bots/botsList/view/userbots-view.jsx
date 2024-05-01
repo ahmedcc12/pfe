@@ -83,7 +83,7 @@ export default function UserBotsPage() {
 
       socket.disconnect();
     };
-  }, []);
+  }, [limit, currentPage, filterName, orderBy, order, searchOption]);
 
   const fetchBots = async () => {
     try {
@@ -198,8 +198,7 @@ export default function UserBotsPage() {
     );
   };
 
-  const notFound =
-    (!bots || bots.length === 0) && !loading && filterName !== '';
+  const notFound = (!bots || bots.length === 0) && !loading;
 
   return (
     <Container
@@ -276,8 +275,11 @@ export default function UserBotsPage() {
                   }
                 />
 
-                {notFound && (
+                {notFound && filterName !== '' && (
                   <TableNoData query={filterName} searchOption={searchOption} />
+                )}
+                {notFound && filterName == '' && (
+                  <TableNoData query={null} searchOption={null} />
                 )}
               </TableBody>
             </Table>

@@ -15,6 +15,7 @@ import Iconify from 'src/components/iconify';
 
 import Searchbar from './common/searchbar';
 import { NAV, HEADER } from './config-layout';
+import LanguagePopover from './common/language-popover';
 import AccountPopover from './common/account-popover';
 import NotificationsPopover from './common/notifications-popover';
 
@@ -47,7 +48,7 @@ export default function Header({ onOpenNav }) {
             icon={themeMode === 'light' ? 'eva:sun-fill' : 'eva:moon-fill'}
           />
         </IconButton>
-
+        <LanguagePopover />
         <NotificationsPopover />
         <AccountPopover />
       </Stack>

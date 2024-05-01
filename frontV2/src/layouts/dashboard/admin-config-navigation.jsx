@@ -54,6 +54,16 @@ const adminNavConfig = [
     ], */
   },
   {
+    title: 'Users Activity',
+    path: '/admin/activity',
+    icon: icon('ic_history'),
+  },
+  {
+    title: 'Messages',
+    path: '/admin/messages',
+    icon: icon('ic_messages'),
+  },
+  {
     title: 'HomePage',
     path: '/',
     icon: icon('ic_home'),

@@ -31,20 +31,28 @@ export default function TableNoData({ query, searchOption }) {
             textAlign: 'center',
           }}
         >
-          <Typography variant="h6" paragraph>
-            Not found
-          </Typography>
+          {query == null ? (
+            <Typography variant="h6" paragraph>
+              No data available
+            </Typography>
+          ) : (
+            <>
+              <Typography variant="h6" paragraph>
+                Not found
+              </Typography>
 
-          <Typography variant="body2">
-            No results found for &nbsp;
-            <strong>
-              {searchOption === 'all' ? null : `"${searchOption}" :`}
-              &quot;
-              {query}
-              &quot;
-            </strong>
-            .
-          </Typography>
+              <Typography variant="body2">
+                No results found for &nbsp;
+                <strong>
+                  {searchOption === 'all' ? null : `"${searchOption}" :`}
+                  &quot;
+                  {query}
+                  &quot;
+                </strong>
+                .
+              </Typography>
+            </>
+          )}
         </Paper>
       </TableCell>
     </TableRow>
@@ -53,4 +61,5 @@ export default function TableNoData({ query, searchOption }) {
 
 TableNoData.propTypes = {
   query: PropTypes.string,
+  searchOption: PropTypes.string,
 };

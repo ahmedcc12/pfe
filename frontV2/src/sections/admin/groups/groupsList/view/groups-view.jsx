@@ -159,8 +159,7 @@ export default function GroupsPage() {
     setTotalCount(totalCount - 1);
   };
 
-  const notFound =
-    (!groups || groups.length === 0) && !loading && filterName !== '';
+  const notFound = (!groups || groups.length === 0) && !loading;
 
   return (
     <Container
@@ -240,8 +239,11 @@ export default function GroupsPage() {
                   }
                 />
 
-                {notFound && (
+                {notFound && filterName !== '' && (
                   <TableNoData query={filterName} searchOption={searchOption} />
+                )}
+                {notFound && filterName == '' && (
+                  <TableNoData query={null} searchOption={null} />
                 )}
               </TableBody>
             </Table>

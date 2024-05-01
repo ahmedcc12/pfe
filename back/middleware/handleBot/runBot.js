@@ -37,11 +37,6 @@ function runBot(scriptUrl, configFileUrl) {
         downloadFile(configFileUrl, configFilePath),
       ]);
 
-      // Full path to the Python executable
-
-      /* const pythonExecutable =
-        "C:\\Users\\acharfeddine\\AppData\\Local\\Programs\\Python\\Python312\\python.exe";
- */
       // Run the Python script with the config file as a command-line argument
       exec(
         `python ${scriptPath} ${configFilePath}`,

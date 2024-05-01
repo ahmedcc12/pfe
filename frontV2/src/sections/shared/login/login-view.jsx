@@ -107,10 +107,10 @@ export default function LoginView() {
           }}
         />
 
-        <ReCAPATCHA
+        {/* <ReCAPATCHA
           sitekey="6LfJJpgpAAAAAJdpjY7H-y2y1wakE7-XMAK2D6hk"
           onChange={(value) => setCaptcha(value)}
-        />
+        /> */}
       </Stack>
 
       <Stack

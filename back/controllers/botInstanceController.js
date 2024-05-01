@@ -10,8 +10,8 @@ const runBot = require("../middleware/handleBot/runBot");
 const getAllBotInstances = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 20;
-  //const search = req.query.search || '';
-  //const searchOption = req.query.searchOption || 'all';
+  const search = req.query.search || "";
+  //const searchOption = req.query.searchOption || "all";
   const order = req.query.order || "asc";
   const orderBy = req.query.orderBy || "name";
 
@@ -20,6 +20,7 @@ const getAllBotInstances = async (req, res) => {
       page,
       limit,
       sort: { [orderBy]: order },
+      populate: [{ path: "bot" }, { path: "user" }],
     };
 
     const botInstances = await BotInstance.paginate({}, options);

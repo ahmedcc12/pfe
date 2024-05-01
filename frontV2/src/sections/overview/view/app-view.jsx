@@ -29,7 +29,7 @@ export default function AppView() {
         <Grid xs={12} sm={6} md={3}>
           <AppWidgetSummary
             title="Weekly Sales"
-            total={714000}
+            total={71000}
             color="success"
             icon={<img alt="icon" src="/assets/icons/glass/ic_glass_bag.png" />}
           />
@@ -40,7 +40,9 @@ export default function AppView() {
             title="New Users"
             total={1352831}
             color="info"
-            icon={<img alt="icon" src="/assets/icons/glass/ic_glass_users.png" />}
+            icon={
+              <img alt="icon" src="/assets/icons/glass/ic_glass_users.png" />
+            }
           />
         </Grid>
 
@@ -58,7 +60,9 @@ export default function AppView() {
             title="Bug Reports"
             total={234}
             color="error"
-            icon={<img alt="icon" src="/assets/icons/glass/ic_glass_message.png" />}
+            icon={
+              <img alt="icon" src="/assets/icons/glass/ic_glass_message.png" />
+            }
           />
         </Grid>
 
@@ -143,7 +147,14 @@ export default function AppView() {
           <AppCurrentSubject
             title="Current Subject"
             chart={{
-              categories: ['English', 'History', 'Physics', 'Geography', 'Chinese', 'Math'],
+              categories: [
+                'English',
+                'History',
+                'Physics',
+                'Geography',
+                'Chinese',
+                'Math',
+              ],
               series: [
                 { name: 'Series 1', data: [80, 50, 30, 40, 100, 20] },
                 { name: 'Series 2', data: [20, 30, 40, 80, 20, 80] },
@@ -191,22 +202,38 @@ export default function AppView() {
               {
                 name: 'FaceBook',
                 value: 323234,
-                icon: <Iconify icon="eva:facebook-fill" color="#1877F2" width={32} />,
+                icon: (
+                  <Iconify
+                    icon="eva:facebook-fill"
+                    color="#1877F2"
+                    width={32}
+                  />
+                ),
               },
               {
                 name: 'Google',
                 value: 341212,
-                icon: <Iconify icon="eva:google-fill" color="#DF3E30" width={32} />,
+                icon: (
+                  <Iconify icon="eva:google-fill" color="#DF3E30" width={32} />
+                ),
               },
               {
                 name: 'Linkedin',
                 value: 411213,
-                icon: <Iconify icon="eva:linkedin-fill" color="#006097" width={32} />,
+                icon: (
+                  <Iconify
+                    icon="eva:linkedin-fill"
+                    color="#006097"
+                    width={32}
+                  />
+                ),
               },
               {
                 name: 'Twitter',
                 value: 443232,
-                icon: <Iconify icon="eva:twitter-fill" color="#1C9CEA" width={32} />,
+                icon: (
+                  <Iconify icon="eva:twitter-fill" color="#1C9CEA" width={32} />
+                ),
               },
             ]}
           />

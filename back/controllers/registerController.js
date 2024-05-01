@@ -47,7 +47,8 @@ const handleNewUser = async (req, res) => {
     const hashedPwd = await bcrypt.hash(password, 10);
 
     const mailOptions = {
-      from: process.env.MAIL,
+      //from: process.env.MAIL,
+      from: "noreply@soprahr.com",
       to: email,
       subject: "Welcome to the app",
       text:

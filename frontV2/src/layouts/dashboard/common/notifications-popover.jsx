@@ -26,6 +26,8 @@ import useAxiosPrivate from 'src/hooks/useAxiosPrivate';
 import useAuth from 'src/hooks/useAuth';
 import { io } from 'socket.io-client';
 
+import { useNavigate } from 'react-router-dom';
+
 // ----------------------------------------------------------------------
 
 export default function NotificationsPopover() {
@@ -40,6 +42,7 @@ export default function NotificationsPopover() {
   const [paginationClicked, setPaginationClicked] = useState(false);
 
   const axiosPrivate = useAxiosPrivate();
+  const navigate = useNavigate();
 
   const { auth } = useAuth();
   const abortController = new AbortController();
@@ -137,7 +140,8 @@ export default function NotificationsPopover() {
     }),
   };
 
-  const handleDeleteNotification = async (notificationId) => {
+  const handleDeleteNotification = async (notificationId, e) => {
+    e.stopPropagation();
     try {
       await axiosPrivate.delete(`/notifications/${notificationId}`);
       const newNotifications = notifications?.filter(
@@ -149,6 +153,11 @@ export default function NotificationsPopover() {
     }
   };
 
+  const handleClickNotification = (notification) => {
+    console.log(notification);
+    handleClose();
+    navigate('/activity');
+  };
   function NotificationItem({ notification }) {
     const { title } = renderContent(notification);
 
@@ -162,6 +171,7 @@ export default function NotificationsPopover() {
             bgcolor: 'action.selected',
           }),
         }}
+        onClick={() => handleClickNotification(notification)}
       >
         <ListItemAvatar>
           <Avatar sx={{ bgcolor: 'background.neutral' }}>
@@ -194,7 +204,7 @@ export default function NotificationsPopover() {
                 sx={{ ml: 1 }}
                 edge="end"
                 size="small"
-                onClick={() => handleDeleteNotification(notification._id)}
+                onClick={(e) => handleDeleteNotification(notification._id, e)}
               >
                 <Iconify icon="ph:trash" width={20} height={20} />
               </IconButton>

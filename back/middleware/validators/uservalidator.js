@@ -76,7 +76,9 @@ const UserValidationRules = () => {
     check("group").trim().escape().notEmpty().withMessage("Group is required"),
     check("avatarUrl")
       .custom((value, { req }) => {
-        if (!req?.file) return false;
+        if (req?.file === undefined) {
+          return true;
+        }
         return (
           req?.file.mimetype === "image/jpeg" ||
           req?.file.mimetype === "image/jpg" ||
