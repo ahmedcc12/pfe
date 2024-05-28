@@ -1,4 +1,6 @@
 const AdminMessage = require("../model/AdminMessage");
+const Notification = require("../model/Notification");
+const User = require("../model/User");
 
 const getAllMessages = async (req, res) => {
   try {
@@ -30,11 +32,23 @@ const getAllMessages = async (req, res) => {
 
 const sendMessage = async (req, res) => {
   const { subject, message, sender } = req.body;
-  console.log(req.body);
   try {
     const newMessage = new AdminMessage({ sender, subject, message });
     await newMessage.save();
-    global.io.emit("newMessage");
+
+    const user = await User.findById(sender);
+
+    const startednotification = new Notification({
+      user,
+      message: `${user.firstname} ${user.lastname} sent a message to the admin.`,
+      title: "New Message",
+      type: "chat_message",
+    });
+
+    if (startednotification) {
+      global.io.emit("newNotification", { userId: "admin" });
+      await startednotification.save();
+    }
     res.status(201).json(newMessage);
   } catch (error) {
     res.status(500).json({ message: error.message });

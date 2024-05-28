@@ -67,43 +67,33 @@ app.use(timeout("3m"));
 
 // routes
 app.use("/api/auth", require("./routes/auth"));
+
 app.use("/api/refresh", require("./routes/refresh"));
+
 app.use("/api/logout", require("./routes/logout"));
+
 app.use("/api/auth/forgotpassword", require("./routes/auth"));
+
 app.use("/api/auth/resetpassword", require("./routes/auth"));
-app.use("/api/auth/resetpassword/:token", require("./routes/auth"));
 
 app.use(verifyJWT);
 app.use("/api/register", require("./routes/register"));
 
 app.use("/api/users", require("./routes/api/users"));
-app.use("/api/users/:id", require("./routes/api/users"));
 
 app.use("/api/bots", require("./routes/api/bot"));
-app.use("/api/bots/:id", require("./routes/api/bot"));
 
 app.use("/api/groups", require("./routes/api/group"));
-app.use("/api/groups/:id", require("./routes/api/group"));
-app.use("/api/groups/:id/bots", require("./routes/api/group"));
 
 app.use("/api/botinstances", require("./routes/api/botInstance"));
-app.use("/api/botinstances/scheduled", require("./routes/api/botInstance"));
-app.use("/api/botinstances/:id", require("./routes/api/botInstance"));
-app.use(
-  "/api/botinstances/status/:userid/:botid",
-  require("./routes/api/botInstance")
-);
 
 app.use("/api/notifications", require("./routes/api/notification"));
-app.use("/api/notifications/:userid", require("./routes/api/notification"));
-app.use("/api/notifications/:id", require("./routes/api/notification"));
-app.use(
-  "/api/notifications/unread/:userid",
-  require("./routes/api/notification")
-);
 
 app.use("/api/adminmessage", require("./routes/api/adminMessage"));
-app.use("/api/adminmessage/:id", require("./routes/api/adminMessage"));
+
+app.use("/api/stats", require("./routes/api/stats"));
+
+app.use("/api/userStats", require("./routes/api/userStats"));
 
 const server = app.listen(
   PORT,

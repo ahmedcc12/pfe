@@ -1,6 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 
-import { AppView } from 'src/sections/admin/overview/view';
+import { AppView } from 'src/sections/user/overview/view';
 
 // ----------------------------------------------------------------------
 

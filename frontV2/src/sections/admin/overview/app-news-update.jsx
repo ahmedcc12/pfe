@@ -14,9 +14,12 @@ import { fToNow } from 'src/utils/format-time';
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
 
+import { useNavigate } from 'react-router-dom';
+
 // ----------------------------------------------------------------------
 
 export default function AppNewsUpdate({ title, subheader, list, ...other }) {
+  const navigate = useNavigate();
   return (
     <Card {...other}>
       <CardHeader title={title} subheader={subheader} />
@@ -36,6 +39,7 @@ export default function AppNewsUpdate({ title, subheader, list, ...other }) {
           size="small"
           color="inherit"
           endIcon={<Iconify icon="eva:arrow-ios-forward-fill" />}
+          onClick={() => navigate('/admin/messages')}
         >
           View all
         </Button>
@@ -53,7 +57,7 @@ AppNewsUpdate.propTypes = {
 // ----------------------------------------------------------------------
 
 function NewsItem({ news }) {
-  const { image, title, description, postedAt } = news;
+  const { image, title, description, postedAt, subject } = news;
 
   return (
     <Stack direction="row" alignItems="center" spacing={2}>
@@ -68,6 +72,17 @@ function NewsItem({ news }) {
         <Link color="inherit" variant="subtitle2" underline="hover" noWrap>
           {title}
         </Link>
+
+        <Typography
+          variant="body2"
+          sx={{
+            color: 'text.secondary',
+            fontWeight: 'bold',
+          }}
+          noWrap
+        >
+          {subject}
+        </Typography>
 
         <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
           {description}

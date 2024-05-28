@@ -65,7 +65,7 @@ export default function NotificationsPopover() {
     const socket = io(ENDPOINT);
 
     socket.on('newNotification', ({ userId }) => {
-      if (userId === auth.user.userId) {
+      if (userId === auth.user.userId || userId === 'admin') {
         setUnreadNotifications((prevCount) => prevCount + 1);
       }
     });
@@ -154,9 +154,8 @@ export default function NotificationsPopover() {
   };
 
   const handleClickNotification = (notification) => {
-    console.log(notification);
-    handleClose();
-    navigate('/activity');
+    if (notification.type === 'message') navigate('/admin/messages');
+    else navigate('/activity');
   };
   function NotificationItem({ notification }) {
     const { title } = renderContent(notification);
@@ -175,12 +174,28 @@ export default function NotificationsPopover() {
       >
         <ListItemAvatar>
           <Avatar sx={{ bgcolor: 'background.neutral' }}>
-            <Iconify
-              icon="ion:notifications-outline"
-              width={24}
-              height={24}
-              color="black"
-            />
+            {notification.type === 'message' ? (
+              <Iconify
+                icon="ant-design:message-outlined"
+                width={24}
+                height={24}
+                color="black"
+              />
+            ) : notification.type === 'mail' ? (
+              <Iconify
+                icon="eva:email-outline"
+                width={24}
+                height={24}
+                color="black"
+              />
+            ) : (
+              <Iconify
+                icon="ion:notifications-outline"
+                width={24}
+                height={24}
+                color="black"
+              />
+            )}
           </Avatar>
         </ListItemAvatar>
         <ListItemText

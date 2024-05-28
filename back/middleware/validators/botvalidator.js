@@ -28,9 +28,9 @@ const BotValidationRules = () => {
       .escape()
       .notEmpty()
       .withMessage("Name is required")
-      .isLength({ min: 3, max: 10 })
+      .isLength({ min: 3, max: 20 })
       .withMessage(
-        "Name must be at least 3 characters long and at most 10 characters long"
+        "Name must be at least 3 characters long and at most 20 characters long"
       ),
     check("description")
       .trim()

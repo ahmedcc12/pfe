@@ -7,7 +7,7 @@ import DashboardLayout from 'src/layouts/dashboard';
 export const NotFoundPage = lazy(
   () => import('src/pages/shared/page-not-found'),
 );
-export const HomePage = lazy(() => import('src/pages/home'));
+export const IndexPage = lazy(() => import('src/pages/user/app'));
 
 export const UserBotsList = lazy(() => import('src/pages/user/bots/botsList'));
 
@@ -30,7 +30,7 @@ export default function Router() {
         </DashboardLayout>
       ),
       children: [
-        { element: <HomePage />, index: true },
+        { element: <IndexPage />, index: true },
         { path: '/bots', element: <UserBotsList /> },
         { path: '/activity', element: <UserActivityList /> },
       ],
