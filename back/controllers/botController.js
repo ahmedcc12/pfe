@@ -51,7 +51,7 @@ const getAllBots = async (req, res) => {
 };
 
 const createBot = async (req, res) => {
-  const { name, description, guide } = req.body;
+  const { name, description, guide, configtype } = req.body;
   const file = req.file;
   if (!name || !description || !file) {
     return res.status(400).json({ message: "Missing required fields" });
@@ -67,11 +67,23 @@ const createBot = async (req, res) => {
     if (data?.status === 500)
       return res.status(500).json({ message: "Internal server error" });
 
+    let configType;
+    if (configtype === "json") {
+      configType = { MIMEType: "application/json", extensions: [".json"] };
+    } else if (configtype === "pdf") {
+      configType = { MIMEType: "application/pdf", extensions: [".pdf"] };
+    } else if (configtype === "csv") {
+      configType = { MIMEType: "text/csv", extensions: [".csv"] };
+    } else {
+      return res.status(400).json({ message: "Invalid config type" });
+    }
+
     const newBot = new Bot({
       name,
       description,
       configuration: { downloadURL, path },
       guide,
+      configType,
     });
 
     const result = await newBot.save();
@@ -137,7 +149,7 @@ const updateBot = async (req, res) => {
   if (!req?.params?.id)
     return res.status(400).json({ message: "Bot name required" });
 
-  const { name, description, guide } = req.body;
+  const { name, description, guide, configtype } = req.body;
   const file = req.file;
 
   if (!name || !description) {
@@ -160,6 +172,26 @@ const updateBot = async (req, res) => {
     existingBot.name = name;
     existingBot.description = description;
     existingBot.guide = guide;
+    let configType;
+    if (configtype === "json") {
+      existingBot.configType = {
+        MIMEType: "application/json",
+        extensions: [".json"],
+      };
+    } else if (configtype === "pdf") {
+      existingBot.configType = {
+        MIMEType: "application/pdf",
+        extensions: [".pdf"],
+      };
+    } else if (configtype === "csv") {
+      existingBot.configType = {
+        MIMEType: "text/csv",
+        extensions: [".csv"],
+      };
+    } else {
+      return res.status(400).json({ message: "Invalid config type" });
+    }
+
     if (file) {
       if (existingBot.configuration.path) {
         const filePath = existingBot.configuration.path;

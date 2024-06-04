@@ -52,7 +52,7 @@ RHFUploadSingleFile.propTypes = {
 
 export function RHFUploadSingleFile({ name, acceptedFiles, ...other }) {
   const { control } = useFormContext();
-
+  console.log(acceptedFiles);
   return (
     <Controller
       name={name}

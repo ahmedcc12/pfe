@@ -95,6 +95,8 @@ app.use("/api/stats", require("./routes/api/stats"));
 
 app.use("/api/userStats", require("./routes/api/userStats"));
 
+app.use("/api/tickets", require("./routes/api/ticket"));
+
 const server = app.listen(
   PORT,
   console.log(`Server running on PORT ${PORT}...`)

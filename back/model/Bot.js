@@ -26,6 +26,17 @@ const botSchema = new Schema({
     type: String,
     required: true,
   },
+
+  configType: {
+    MIMEType: {
+      type: String,
+      required: true,
+    },
+    extensions: {
+      type: [String],
+      required: true,
+    },
+  },
 });
 
 botSchema.plugin(mongoosePaginate);

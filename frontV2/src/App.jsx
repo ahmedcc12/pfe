@@ -4,8 +4,11 @@ import { Route, Routes } from 'react-router-dom';
 import RequireAuth from './components/RequireAuth';
 
 import PersistLogin from 'src/utils/PersistLogin';
+
 import AdminSections from 'src/routes/adminSections';
 import UserSections from 'src/routes/userSections';
+import EmployeeSections from 'src/routes/employeeSections';
+
 import Login from './pages/shared/login';
 import ForgotPasswordPage from './pages/shared/forgotPassword';
 import ResetPasswordPage from './pages/shared/resetPassword';
@@ -26,12 +29,17 @@ function App() {
             </PublicRoute>
           }
         />
+
         <Route element={<RequireAuth allowedRoles={['user', 'admin']} />}>
           <Route path="/*" element={<UserSections />} />
         </Route>
+
         <Route element={<RequireAuth allowedRoles={['admin']} />}>
           <Route path="/admin/*" element={<AdminSections />} />
         </Route>
+
+        {/*         <Route path="/employee" element={<EmployeeSections />} />
+         */}
         <Route path="forgot-password" element={<ForgotPasswordPage />} />
         <Route path="resetpassword/:token" element={<ResetPasswordPage />} />
         <Route path="/404" element={<NotFound />} />

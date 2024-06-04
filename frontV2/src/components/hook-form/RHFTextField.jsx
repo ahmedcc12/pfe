@@ -5,12 +5,18 @@ import { useFormContext, Controller } from 'react-hook-form';
 import { TextField } from '@mui/material';
 
 // ----------------------------------------------------------------------
-
 RHFTextField.propTypes = {
-  name: PropTypes.string,
+  name: PropTypes.string.isRequired,
+  multiline: PropTypes.bool,
+  rows: PropTypes.number,
 };
 
-export default function RHFTextField({ name, ...other }) {
+export default function RHFTextField({
+  name,
+  multiline = false,
+  rows,
+  ...other
+}) {
   const { control } = useFormContext();
 
   return (
@@ -18,7 +24,15 @@ export default function RHFTextField({ name, ...other }) {
       name={name}
       control={control}
       render={({ field, fieldState: { error } }) => (
-        <TextField {...field} fullWidth error={!!error} helperText={error?.message} {...other} />
+        <TextField
+          {...field}
+          fullWidth
+          error={!!error}
+          helperText={error?.message}
+          multiline={multiline}
+          rows={rows}
+          {...other}
+        />
       )}
     />
   );

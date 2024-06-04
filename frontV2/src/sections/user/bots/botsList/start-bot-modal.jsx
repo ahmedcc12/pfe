@@ -198,8 +198,11 @@ export default function StartBotModal({ open, onClose, bot, botStatus }) {
                 <Grid item xs={12}>
                   <InputLabel>Config</InputLabel>
                   <RHFUploadSingleFile
-                    acceptedFiles={{
+                    /* acceptedFiles={{
                       'application/json': ['.json'],
+                    }} */
+                    acceptedFiles={{
+                      [bot.configType.MIMEType]: bot.configType.extensions,
                     }}
                     name="file"
                     control={control}

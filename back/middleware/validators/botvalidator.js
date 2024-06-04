@@ -48,14 +48,14 @@ const BotValidationRules = () => {
       .withMessage("Guide is required")
       .isLength({ min: 10 })
       .withMessage("Guide must be at least 10 characters"),
-    check("file")
+    /*     check("file")
       .custom((value, { req }) => {
         if (!req.file) throw new Error("File is required");
         return (
           req.file.mimetype === "application/x-python-code" || "text/x-python"
         );
       })
-      .withMessage("Invalid file type"),
+      .withMessage("Invalid file type"), */
   ];
 };
 

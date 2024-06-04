@@ -4,13 +4,13 @@ const createBotInstancesValidationRules = () => {
   return [
     check("bot").trim().escape().notEmpty().withMessage("BotId is required"),
     check("user").trim().escape().notEmpty().withMessage("UserId is required"),
-    check("file")
+    /*     check("file")
       .custom((value, { req }) => {
         if (!req.file) throw new Error("Config is required");
         console.log(req.file.mimetype);
         return req.file.mimetype === "application/json";
       })
-      .withMessage("Invalid file type"),
+      .withMessage("Invalid file type"),*/
   ];
 };
 

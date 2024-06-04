@@ -22,6 +22,7 @@ import Scrollbar from 'src/components/scrollbar';
 import { NAV } from './config-layout';
 import adminNavConfig from './admin-config-navigation';
 import userNavConfig from './user-config-navigation';
+import employeeNavConfig from './employee-config-navigation';
 
 import Iconify from 'src/components/iconify';
 
@@ -171,7 +172,12 @@ export default function Nav({ openNav, onCloseNav, section }) {
 
   const renderMenu = (
     <Stack component="nav" spacing={0.5} sx={{ px: 2 }}>
-      {(section === 'admin' ? adminNavConfig : userNav).map((item) => (
+      {(section === 'admin'
+        ? adminNavConfig
+        : section === 'employee'
+          ? employeeNavConfig
+          : userNav
+      ).map((item) => (
         <NavItem key={item.title} item={item} />
       ))}
     </Stack>

@@ -68,6 +68,17 @@ export default function UploadSingleFile({
     setValue('file', null);
   };
 
+  const handleVue = () => {
+    if (
+      typeof file === 'string' &&
+      file.startsWith('https://firebasestorage.googleapis.com/')
+    ) {
+      window.open(file);
+    } else {
+      window.open(URL.createObjectURL(file));
+    }
+  };
+
   return (
     <Box sx={{ width: '100%', ...sx }}>
       <DropZoneStyle
@@ -120,12 +131,7 @@ export default function UploadSingleFile({
 
             <Grid item xs={3}>
               <Stack direction="row" spacing={1}>
-                <IconButton
-                  size="small"
-                  onClick={() => {
-                    window.open(URL.createObjectURL(file));
-                  }}
-                >
+                <IconButton size="small" onClick={handleVue}>
                   <RemoveRedEyeIcon />
                 </IconButton>
 

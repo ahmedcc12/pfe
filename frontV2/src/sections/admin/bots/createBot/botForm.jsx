@@ -15,6 +15,7 @@ import {
   FormProvider,
   RHFTextField,
   RHFUploadSingleFile,
+  RHFSelect,
 } from 'src/components/hook-form';
 
 import useAxiosPrivate from 'src/hooks/useAxiosPrivate';
@@ -45,6 +46,21 @@ export default function CreateBot() {
       try {
         const { data } = await axiosPrivate.get(`/bots/${botId}`);
         setCurrentBot(data);
+        let configTypeValue = '';
+        switch (data.configType.MIMEType) {
+          case 'application/json':
+            configTypeValue = 'json';
+            break;
+          case 'application/pdf':
+            configTypeValue = 'pdf';
+            break;
+          case 'text/csv':
+            configTypeValue = 'csv';
+            break;
+          default:
+            break;
+        }
+        setValue('configtype', configTypeValue);
       } catch (error) {
         console.error('Error fetching Bot', error);
         navigate('/missing');
@@ -221,6 +237,12 @@ export default function CreateBot() {
                 >
                   <RHFTextField name="name" label="Name" />
                   <RHFTextField name="description" label="Description" />
+                  <RHFSelect name="configtype" label="Config Type">
+                    <option value="" hidden></option>
+                    <option value="json">JSON</option>
+                    <option value="pdf">PDF</option>
+                    <option value="csv">CSV</option>
+                  </RHFSelect>
                 </Box>
                 <Box sx={{ mt: 3 }}>
                   <RHFTextField multiline rows={4} name="guide" label="Guide" />
