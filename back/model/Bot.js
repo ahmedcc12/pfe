@@ -26,7 +26,6 @@ const botSchema = new Schema({
     type: String,
     required: true,
   },
-
   configType: {
     MIMEType: {
       type: String,

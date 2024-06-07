@@ -52,6 +52,7 @@ const getAllBots = async (req, res) => {
 
 const createBot = async (req, res) => {
   const { name, description, guide, configtype } = req.body;
+  console.log(configtype);
   const file = req.file;
   if (!name || !description || !file) {
     return res.status(400).json({ message: "Missing required fields" });
@@ -61,12 +62,6 @@ const createBot = async (req, res) => {
     if (bot)
       return res.status(400).json({ message: "Bot name already exists" });
 
-    const data = await uploadFile(file, `Script/${name}`);
-    const { path, downloadURL } = data;
-
-    if (data?.status === 500)
-      return res.status(500).json({ message: "Internal server error" });
-
     let configType;
     if (configtype === "json") {
       configType = { MIMEType: "application/json", extensions: [".json"] };
@@ -74,9 +69,17 @@ const createBot = async (req, res) => {
       configType = { MIMEType: "application/pdf", extensions: [".pdf"] };
     } else if (configtype === "csv") {
       configType = { MIMEType: "text/csv", extensions: [".csv"] };
+    } else if (configtype === "log") {
+      configType = { MIMEType: "text/plain", extensions: [".log"] };
     } else {
       return res.status(400).json({ message: "Invalid config type" });
     }
+
+    const data = await uploadFile(file, `Script/${name}`);
+    const { path, downloadURL } = data;
+
+    if (data?.status === 500)
+      return res.status(500).json({ message: "Internal server error" });
 
     const newBot = new Bot({
       name,
@@ -151,6 +154,7 @@ const updateBot = async (req, res) => {
 
   const { name, description, guide, configtype } = req.body;
   const file = req.file;
+  console.log(configtype);
 
   if (!name || !description) {
     return res.status(400).json({ message: "Missing required fields" });
@@ -188,6 +192,11 @@ const updateBot = async (req, res) => {
         MIMEType: "text/csv",
         extensions: [".csv"],
       };
+    } else if (configtype === "log") {
+      existingBot.configType = {
+        MIMEType: "text/plain",
+        extensions: [".log"],
+      };
     } else {
       return res.status(400).json({ message: "Invalid config type" });
     }
@@ -197,7 +206,7 @@ const updateBot = async (req, res) => {
         const filePath = existingBot.configuration.path;
         await deleteFile(filePath);
       }
-      const data = await uploadFile(file, "configuration");
+      const data = await uploadFile(file, `Script/${name}`);
       if (data?.status === 500)
         return res.status(500).json({ message: "Internal server error" });
       const { path, downloadURL } = data;

@@ -198,15 +198,15 @@ export default function Nav({ openNav, onCloseNav, section }) {
       {renderAccount}
       {renderMenu}
       <Box sx={{ flexGrow: 1 }} />
-      {/*       {auth.user.role !== 'admin' && (
-       */}{' '}
-      <Button
-        variant="outlined"
-        onClick={handleClickOpen}
-        sx={{ mx: 2.5, mb: 3, borderColor: 'red', color: 'red' }}
-      >
-        Contact Admin
-      </Button>
+      {auth.user.role !== 'admin' && (
+        <Button
+          variant="outlined"
+          onClick={handleClickOpen}
+          sx={{ mx: 2.5, mb: 3, borderColor: 'red', color: 'red' }}
+        >
+          Contact Admin
+        </Button>
+      )}
     </Scrollbar>
   );
 

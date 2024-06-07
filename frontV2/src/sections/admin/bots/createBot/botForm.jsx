@@ -57,6 +57,9 @@ export default function CreateBot() {
           case 'text/csv':
             configTypeValue = 'csv';
             break;
+          case 'text/plain':
+            configTypeValue = 'log';
+            break;
           default:
             break;
         }
@@ -143,6 +146,7 @@ export default function CreateBot() {
           allowEscapeKey: false,
         });
         Swal.showLoading();
+        console.log('data', data);
         await axiosPrivate.put(`/bots/${botId}`, data, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
@@ -242,6 +246,7 @@ export default function CreateBot() {
                     <option value="json">JSON</option>
                     <option value="pdf">PDF</option>
                     <option value="csv">CSV</option>
+                    <option value="log">Log</option>
                   </RHFSelect>
                 </Box>
                 <Box sx={{ mt: 3 }}>

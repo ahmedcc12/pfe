@@ -1,0 +1,11 @@
+{
+  "subject": "Test Email",
+  "body": "This is a test email sent from the script.",
+  "to_emails": ["colmojelmo@gufum.com", "recipient2@example.com"],
+  "smtp_config": {
+    "smtp_server": "smtp.gmail.com",
+    "smtp_port": 587,
+    "smtp_user": "ahmedcc619@gmail.com",
+    "smtp_password": "ltze rjfl hbim wgne"
+  }
+}

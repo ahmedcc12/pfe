@@ -152,7 +152,10 @@ export default function GroupTableRow({
           <Box display="flex" alignItems="center" gap={1}>
             <Button variant="contained" onClick={() => viewBots(group._id)}>
               <Iconify icon="mdi:eye-outline" sx={{ mr: 1 }} />
-              <Box sx={{ mr: 1 }}>{group.bots.length} Bots</Box>
+              <Box sx={{ mr: 1 }}>
+                {group.bots.length}
+                {group.bots.length > 1 ? ' Bots' : ' Bot'}
+              </Box>
             </Button>
           </Box>
         </TableCell>
@@ -200,16 +203,23 @@ export default function GroupTableRow({
 
         <Table>
           <TableBody>
-            {botNames.slice(page * 5, page * 5 + 5).map((bot, index) => (
-              <TableRow key={index}>
+            {(!botNames && (
+              <TableRow>
                 <TableCell>
-                  <Box display="flex" alignItems="center" gap={1}>
-                    <Iconify icon="mdi:robot" />
-                    <Typography variant="body2">{bot}</Typography>
-                  </Box>
+                  <Typography variant="body2">No bots found</Typography>
                 </TableCell>
               </TableRow>
-            ))}
+            )) ||
+              botNames?.slice(page * 5, page * 5 + 5).map((bot, index) => (
+                <TableRow key={index}>
+                  <TableCell>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <Iconify icon="mdi:robot" />
+                      <Typography variant="body2">{bot}</Typography>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
         <TablePagination
